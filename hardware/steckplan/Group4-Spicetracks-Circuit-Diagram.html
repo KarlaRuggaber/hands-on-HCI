@@ -1,0 +1,746 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Spicetracks Steckplan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: Kopf mit Eckdaten, dann der breite Steckplan als Zeichnung mit Filter und Infozeile, darunter Kabelliste und Hinweise */
+:root{
+  --bg:#eef1ec; --surface:#fbfcfa; --ink:#17201a; --muted:#56635a; --line:#d3dbd4; --accent:#2f7a4a; --accent-ink:#ffffff;
+  --stage:#e5e9e3; --halo:#e5e9e3;
+  --w5v:#d23a2e; --w3v3:#e27a10; --wgnd:#1d2327; --wtouch:#7b4fd8; --waout:#1f6fe0; --wsig:#c99700; --wusb:#5a636c; --wribbon:#b4bac1;
+  --wstep:#d0408f; --wled:#0f9c86; --wcable:#3a4046; --wlight:#5f8f00;
+  --font-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --font-body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1311; --surface:#161b18; --ink:#e3eae5; --muted:#9aa79e; --line:#28312b; --accent:#6fc58f; --accent-ink:#0f1311;
+    --stage:#141916; --halo:#141916; --wgnd:#cfd6d1; --wtouch:#9a78f2; --waout:#4c90f2; --wusb:#8d969e; --wribbon:#7d848b;
+    --wstep:#ec5fae; --wled:#2cc3aa; --wcable:#8a939b; --wlight:#9ccc2e;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1311; --surface:#161b18; --ink:#e3eae5; --muted:#9aa79e; --line:#28312b; --accent:#6fc58f; --accent-ink:#0f1311;
+  --stage:#141916; --halo:#141916; --wgnd:#cfd6d1; --wtouch:#9a78f2; --waout:#4c90f2; --wusb:#8d969e; --wribbon:#7d848b;
+  --wstep:#ec5fae; --wled:#2cc3aa; --wcable:#8a939b; --wlight:#9ccc2e;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1720px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+header{display:grid;gap:10px}
+.eyebrow{font:600 12px/1 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(30px,4.2vw,46px)/1.02 var(--font-display);letter-spacing:.01em;margin:0;text-wrap:balance}
+.lede{margin:0;max-width:72ch;color:var(--muted);font-size:16px}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.fact{display:flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:13.5px}
+.fact b{font:600 12.5px var(--font-mono)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.chips,.zoom{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:inherit}
+.chip{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;font-weight:500;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{font:600 11.5px var(--font-mono);opacity:.65}
+.chip:focus-visible,.zbtn:focus-visible,.rowbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.zbtn{padding:7px 12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;font-size:14px}
+.zbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+.info{min-height:70px;display:flex;gap:14px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.info-id{flex:none;min-width:58px;text-align:center;padding:8px 10px;border-radius:8px;font:700 15px var(--font-mono);color:#fff;background:var(--c,var(--ink))}
+.info-main{min-width:0;display:grid;gap:3px}
+.info-route{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font-weight:600;font-size:15.5px}
+.info-route .arrow{color:var(--muted);font-weight:400}
+.info-meta{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--muted);font-size:14px}
+.info-meta span:first-child{font-family:var(--font-mono);font-size:12.5px;color:var(--ink)}
+.info-hint{margin:0;color:var(--muted)}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:auto;-webkit-overflow-scrolling:touch}
+.stage svg{display:block;width:100%;height:auto;min-width:760px}
+.stage.big svg{width:1720px;max-width:none}
+.note{margin:-10px 0 0;color:var(--muted);font-size:13px}
+h2{font:700 26px/1.1 var(--font-display);margin:0;letter-spacing:.01em}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font:600 11.5px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface);position:sticky;top:0}
+tr.grp th{font:700 17px var(--font-display);letter-spacing:.02em;padding-top:16px;background:var(--bg)}
+tr.grp th span{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+tbody tr.row{cursor:pointer}
+tbody tr.row:hover,tbody tr.row.hot{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+tbody tr.row[aria-selected="true"]{background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.rowbtn{display:inline-flex;align-items:center;gap:7px;border:0;background:none;padding:0;cursor:pointer;font:600 13px var(--font-mono)}
+.rowbtn i{width:14px;height:4px;border-radius:2px;display:inline-block}
+td.cable{font-family:var(--font-mono);font-size:12.5px;white-space:nowrap}
+td.why{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;gap:10px;align-content:start;min-width:0}
+.card ol,.card ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.card table{min-width:0;font-size:13.5px}
+.card td,.card th{padding:6px 8px}
+.card td:first-child{white-space:nowrap}
+.mono{font-family:var(--font-mono);font-size:12.5px}
+/* SVG */
+.zl{fill:var(--ink);font:700 17px var(--font-display);letter-spacing:.02em}
+.zs{fill:var(--muted);font:500 12.5px var(--font-body)}
+.pl-name{fill:var(--ink);font:700 17px var(--font-display);letter-spacing:.02em}
+.pl-sub{fill:var(--muted);font:500 11.5px var(--font-mono)}
+.saucer{fill:#9aa3a8}
+.pot{fill:#c36f47}
+.pot-rim{fill:#b15f3a}
+.soil{fill:#5b3f2b}
+.stem{stroke:#3f7a35;stroke-width:3;fill:none}
+.leaf{fill:#5ea64f}.leaf2{fill:#46893c}
+.steel{fill:#a3acb3}.steel2{fill:#c3c9ce}.nut{fill:#8d969d}
+.thread{stroke:#7d868d;stroke-width:1}
+.sensor{fill:#202529}
+.sensor-mark{stroke:#e9edf0;stroke-width:1.2;stroke-dasharray:3 2}
+.sensor-t{fill:#e9edf0;font:700 8.5px var(--font-mono)}
+.sensor-t2{fill:#aeb6bd;font:600 7.5px var(--font-mono)}
+.pin{fill:#c8a54b}
+.bb-body{fill:#f3f1e9;stroke:#d6d1c2;stroke-width:1.5}
+.bb-gap{fill:#e1ddd0}
+.bb-gap-t{fill:#9a947f;font:600 9.5px var(--font-mono)}
+.bb-hole{fill:#56595b}
+.bb-txt{fill:#8a8574;font:600 9.5px var(--font-mono)}
+.bb-txt.used{fill:#2a2a2a;font-weight:700}
+.rail-red{stroke:#d6453a;stroke-width:2}
+.rail-blue{stroke:#2e62c9;stroke-width:2}
+.rail-t-red{fill:#d6453a;font:700 11px var(--font-mono)}
+.rail-t-blue{fill:#2e62c9;font:700 11px var(--font-mono)}
+.esp-body{fill:#22262b}
+.esp-shield{fill:#c5cbd1}
+.esp-shield-t{fill:#3a4148;font:700 10px var(--font-mono)}
+.esp-name{fill:#e7ebef;font:700 16px var(--font-display);letter-spacing:.04em}
+.esp-small{fill:#c9d0d6;font:600 9.5px var(--font-mono)}
+.esp-lbl{fill:#8f99a3;font:500 10.5px var(--font-mono)}
+.esp-lbl.used{fill:#ffffff;font-weight:700}
+.usb-port{fill:#b9c0c7;stroke:#7d858d}
+.relay-pcb{fill:#2b67b0}
+.relay-cube{fill:#1f58a3;stroke:#173f75}
+.relay-t{fill:#e8f0fb;font:700 10px var(--font-mono)}
+.relay-t2{fill:#cfe0f5;font:600 8.5px var(--font-mono)}
+.relay-pin-t{fill:#ffffff;font:700 12px var(--font-mono)}
+.relay-term{fill:#1a4a8a}
+.screw{fill:#c9ced3}
+.screw-slot{stroke:#6b737a;stroke-width:1.5}
+.zone-dash{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 5}
+.water{fill:#5aa7e6;opacity:.22}
+.pump{fill:#37444f}
+.dev{fill:#2a2f33}
+.dev-t{fill:#eef2f5;font:700 13px var(--font-display);letter-spacing:.03em}
+.dev-s{fill:#b9c2ca;font:500 10.5px var(--font-mono)}
+.lead{stroke:#4b5258;stroke-width:2.5;fill:none}
+.pi-pcb{fill:#2c7a4b;stroke:#1f5c37}
+.pi-hdr{fill:#1a1d1f}
+.pi-port{fill:#e9e9e3}
+.disp{fill:#15181b}
+.screen{fill:#2b3d4c}
+.cam{fill:#2c7a4b}
+.lens{fill:#0f1112}.lens2{fill:#30475c}
+.uln{fill:#2f6f4f;stroke:#1f4d36}
+.chip-ic{fill:#141617}
+.chip-t{fill:#e3e7ea;font:700 10px var(--font-mono)}
+.uln-t{fill:#ffffff;font:700 10px var(--font-mono)}
+.motor{fill:#c3c9ce;stroke:#8b939a;stroke-width:1.5}
+.motor2{fill:#2f5fa8}
+.ledbar{fill:#d9dde1;stroke:#a9b0b6}
+.ledpcb{fill:#1c1f22}
+.led{fill:#fff4c9;stroke:#c9b46a;stroke-width:.8}
+.led-t{fill:#e6e9ec;font:700 8px var(--font-mono)}
+.cap{fill:#1f3f7a}
+.cap-stripe{fill:#c9d4e6}
+.wire{cursor:pointer;transition:opacity .15s}
+.wire .halo{stroke:var(--halo);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.wire .core{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.wire .hit{stroke:transparent;fill:none;stroke-width:16;pointer-events:stroke}
+.wire .end{stroke:var(--halo);stroke-width:1.5}
+.wire .housing{fill:#141414;stroke-width:2}
+.wire.dim{opacity:.12}
+.wire.hot .core{stroke-width:var(--hw,5.5)}
+.wire.hot .halo{stroke-width:var(--hh,11)}
+.res-body{fill:#e6d2ab;stroke:#a88f62;stroke-width:.8}
+.dio-body{fill:#1b1b1b}
+.dio-ring{fill:#cfd3d6}
+@media (prefers-reduced-motion: reduce){.wire{transition:none}}
+@media (max-width:640px){.info{align-items:flex-start}.info-id{min-width:48px;font-size:13px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Spicetracks · Elektronik</div>
+    <h1>Steckplan: ESP32-S3, zwei Breadboards, Relais, Pumpe, Motor, LEDs, Lichtsensor, Pi und vier Kräuter</h1>
+    <p class="lede">Jedes Kabel ist eingezeichnet, mit Pin, Loch und Kabeltyp. Fahr mit der Maus über ein Kabel oder tipp es an, dann siehst du oben genau, von wo nach wo es geht. Mit den Knöpfen hebst du einen Bereich hervor.</p>
+    <div class="facts">
+      <span class="fact"><span class="dot" style="background:var(--w3v3)"></span>Breadboard 1: <b>3,3 V</b></span>
+      <span class="fact"><span class="dot" style="background:var(--w5v)"></span>Breadboard 2: <b>5 V</b> vom ELEGOO Power MB V2</span>
+      <span class="fact"><span class="dot" style="background:var(--wsig)"></span>Relais: <b>Reihe 10</b></span>
+      <span class="fact"><span class="dot" style="background:var(--wtouch)"></span>Touch: <b>Reihen 2 · 12 · 19 · 26</b></span>
+      <span class="fact"><span class="dot" style="background:var(--waout)"></span>Feuchte: <b>Reihen 6 · 16 · 23 · 30</b></span>
+      <span class="fact"><span class="dot" style="background:var(--wstep)"></span>Motor: <b>GPIO 15 bis 18</b></span>
+      <span class="fact"><span class="dot" style="background:var(--wled)"></span>LEDs: <b>GPIO 40</b>, Strom aus der Powerbank</span>
+      <span class="fact"><span class="dot" style="background:var(--wlight)"></span>Licht KY-054: <b>GPIO 6</b>, Reihe 11</span>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="chips" id="chips" role="group" aria-label="Bereich hervorheben"></div>
+    <div class="zoom" role="group" aria-label="Grösse">
+      <button class="zbtn" id="zfit" type="button" aria-pressed="true">Ganzes Bild</button>
+      <button class="zbtn" id="zbig" type="button" aria-pressed="false">Vergrössern</button>
+    </div>
+  </div>
+
+  <div class="info" id="info" aria-live="polite"></div>
+
+  <div class="stage" id="stage">
+    <svg id="plan" viewBox="0 -150 1720 1240" role="img" aria-label="Steckplan mit ESP32-S3, zwei Breadboards, Relais, Pumpe, Schrittmotor, LED-Bügel, Raspberry Pi und vier Pflanzen"></svg>
+  </div>
+  <p class="note">Pin-Reihenfolge nach dem Espressif ESP32-S3-DevKitC-1. Bei einem Nachbau zählt der Aufdruck auf eurem Board. Breadboard 1 nutzt Reihen bis 30, Breadboard 2 Reihen bis 20; auf grösseren Boards gelten dieselben Nummern.</p>
+
+  <section style="display:grid;gap:12px">
+    <h2>Kabelliste</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Nr</th><th>Von</th><th>Nach</th><th>Kabel</th><th>Wozu</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="cards">
+    <div class="card">
+      <h2>Regeln beim Stecken</h2>
+      <ol>
+        <li>Nur ohne Strom stecken: USB abziehen und das ELEGOO-Modul ausschalten.</li>
+        <li>ELEGOO Power MB V2: beide Jumper auf 5 V, Plus-Pins auf die rote Schiene. Es liefert höchstens etwa 700 mA, deshalb hängen Relais, Motor und Pumpe daran, die LEDs nicht.</li>
+        <li>Breadboard 1 führt auf den roten Schienen 3,3 V, Breadboard 2 führt 5 V. Die roten Schienen der beiden Boards nie miteinander verbinden.</li>
+        <li>Der 5V-Pin des ESP32 bleibt frei. Der ESP32 bekommt seinen Strom nur über USB vom Pi, nie zusätzlich vom Netzteil.</li>
+        <li>Gemeinsame Masse: Kabel S5 verbindet GND des ESP32 mit Breadboard 2. Ohne diese Verbindung schalten Relais, Motor und LEDs unzuverlässig.</li>
+        <li>Die Rille in der Mitte trennt a bis e von f bis j. Deshalb sitzen Widerstände und Brücken über der Rille.</li>
+        <li>Obere und untere Schienen eines Boards sind getrennt. Die Brücken verbinden sie.</li>
+        <li>Kondensator 1000 µF: nur für die LED-Versorgung, direkt am Eingang des Bügels. Der Streifen mit dem Minuszeichen kommt an GND.</li>
+        <li>Powerbank Intenso B10000: höchstens 2,4 A, deshalb LEDs im Code auf 1500 mA begrenzen. Schaltet sie ab, wenn alle LEDs dunkel sind, lasst ein leichtes Grundglimmen an.</li>
+        <li>Der Lichtsensor KY-054 bekommt nur 3,3 V. Mit 5 V wäre sein Signal zu hoch für den Analogeingang des ESP32. Am Bügel zeigt er nach oben, weg von den LEDs.</li>
+        <li>LED-Streifen haben eine Richtung. Der Pfeil auf dem Streifen zeigt von DIN nach DOUT. Das Kabel vom Breadboard kommt an DIN.</li>
+        <li>Touch-Kabel einzeln führen, nicht neben Motor- oder Pumpenkabeln.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>LED-Nummern für den Code</h2>
+      <table>
+        <thead><tr><th>Stück</th><th>LED-Nummern</th><th>Hinweis</th></tr></thead>
+        <tbody>
+          <tr><td>Bügel</td><td class="mono">0 bis 27</td><td>0 sitzt am Kabelanfang rechts</td></tr>
+          <tr><td>Kraut 1</td><td class="mono">28 bis 30</td><td>3er-Stück innen am Trog</td></tr>
+          <tr><td>Kraut 2</td><td class="mono">31 bis 33</td><td></td></tr>
+          <tr><td>Kraut 3</td><td class="mono">34 bis 36</td><td></td></tr>
+          <tr><td>Kraut 4</td><td class="mono">37 bis 39</td><td>Ende der Kette</td></tr>
+        </tbody>
+      </table>
+      <p style="margin:0;color:var(--muted);font-size:14px">Helligkeit im Code begrenzen, z. B. mit FastLED <span class="mono">setMaxPowerInVoltsAndMilliamps(5, 1500)</span>. 40 LEDs auf Vollweiss brauchen sonst bis 2,4 A.</p>
+    </div>
+    <div class="card">
+      <h2>Kommt später dazu</h2>
+      <table>
+        <thead><tr><th>Teil</th><th>Pin</th><th>Hinweis</th></tr></thead>
+        <tbody>
+          <tr><td>Tank-Füllstand</td><td class="mono">GPIO 7</td><td>5. Feuchtesensor am Tank oder Schwimmer gegen GND</td></tr>
+          <tr><td>Endschalter Verteiler</td><td class="mono">GPIO 39</td><td>INPUT_PULLUP, Schalter gegen GND</td></tr>
+          <tr><td>Pegelwandler 74AHCT125</td><td class="mono">GPIO 40</td><td>nur falls die LEDs flackern, zwischen GPIO 40 und 330 Ω</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  /* ---------- Geometrie ---------- */
+  var X  = function(n){ return 430 + (n-1)*22; };     // Breadboard 1, Reihe 1..30
+  var X2 = function(n){ return 1225 + (n-1)*20; };    // Breadboard 2, Reihe 1..20
+  var R  = {j:436,i:454,h:472,g:490,f:508,e:544,d:562,c:580,b:598,a:616};
+  var R2 = {j:280,i:298,h:316,g:334,f:352,e:386,d:404,c:422,b:440,a:458};
+  var RAIL  = {topG:376, topV:392, botV:658, botG:674};
+  var RAIL2 = {topG:236, topV:252, botV:486, botG:502};
+  var EX = function(i){ return 518 + 22*i; };
+  var TOP = ['GND','5V','14','13','12','11','10','9','46','3','8','18','17','16','15','7','6','5','4','RST','3V3','3V3'];
+  var BOT = ['GND','GND','19','20','21','47','48','45','0','35','36','37','38','39','40','41','42','2','1','RX','TX','GND'];
+  var TOP_Y = 840, BOT_Y = 956;
+  var tx = function(l){ return EX(TOP.indexOf(l)); };
+  var bx = function(l){ return EX(BOT.indexOf(l)); };
+
+  function P(x,y){ var pts=[[x,y]], cx=x, cy=y; for(var k=2;k<arguments.length;k+=2){ if(arguments[k]==='H') cx=arguments[k+1]; else cy=arguments[k+1]; pts.push([cx,cy]); } return pts; }
+  function D(pts){ return 'M'+pts.map(function(p){return p[0]+','+p[1];}).join(' L'); }
+
+  var PL = [
+    {n:1, T:2,  tg:11, fg:1, fh:'untere Leiste', led:'28 bis 30'},
+    {n:2, T:12, tg:12, fg:2, fh:'untere Leiste', led:'31 bis 33'},
+    {n:3, T:19, tg:13, fg:4, fh:'obere Leiste',  led:'34 bis 36'},
+    {n:4, T:26, tg:14, fg:5, fh:'obere Leiste',  led:'37 bis 39'}
+  ];
+  PL.forEach(function(p){ p.ex=X(p.T); p.cx=p.ex+25; });
+  var TE = {
+    1:P(tx('11'),TOP_Y,'V',716,'H',X(2),'V',R.a),
+    2:P(tx('12'),TOP_Y,'V',758,'H',X(12),'V',R.a),
+    3:P(tx('13'),TOP_Y,'V',744,'H',X(19),'V',R.a),
+    4:P(tx('14'),TOP_Y,'V',730,'H',X(26),'V',R.a)
+  };
+  var FE = {
+    1:P(bx('1'),BOT_Y,'V',1004,'H',416,'V',692,'H',X(6),'V',R.a),
+    2:P(bx('2'),BOT_Y,'V',984,'H',436,'V',704,'H',X(16),'V',R.a),
+    3:P(tx('4'),TOP_Y,'V',R.a),
+    4:P(tx('5'),TOP_Y,'V',778,'H',X(30),'V',R.a)
+  };
+
+  /* ---------- Kabel ---------- */
+  var W = [];
+  function add(o){ var w={kind:'wire', ends:['m','m']}; for(var k in o) w[k]=o[k]; W.push(w); }
+  var BR='#7b4a26', BK='#151515', RD='#d0352b', OR='#e8862a', GD='#c9a227';
+
+  // 3,3 V auf Breadboard 1
+  add({id:'V1',g:'power',c:'var(--wgnd)',pts:P(tx('GND'),TOP_Y,'V',RAIL.botG),ends:['f','m'],
+    from:'ESP32 · GND, obere Leiste ganz links',to:'Breadboard 1 · untere blaue Schiene (−), Spalte 5',cable:'female-male, schwarz',why:'Masse für Breadboard 1.'});
+  add({id:'V2',g:'power',c:'var(--w3v3)',pts:P(tx('3V3'),TOP_Y,'V',RAIL.botV),ends:['f','m'],
+    from:'ESP32 · 3V3, obere Leiste',to:'Breadboard 1 · untere rote Schiene (+), Spalte 25',cable:'female-male, orange',why:'3,3 V für die Feuchtesensoren. Diese roten Schienen führen 3,3 V, nicht 5 V.'});
+  add({id:'V3',g:'power',c:'var(--w3v3)',pts:P(X(1),RAIL.botV,'H',388,'V',RAIL.topV,'H',X(1)),
+    from:'Breadboard 1 · untere rote Schiene, Spalte 1',to:'Breadboard 1 · obere rote Schiene, Spalte 1',cable:'male-male, orange',why:'Obere und untere Schienen sind nicht verbunden. Diese Brücke bringt 3,3 V nach oben.'});
+  add({id:'V4',g:'power',c:'var(--wgnd)',pts:P(X(1),RAIL.botG,'H',376,'V',RAIL.topG,'H',X(1)),
+    from:'Breadboard 1 · untere blaue Schiene, Spalte 1',to:'Breadboard 1 · obere blaue Schiene, Spalte 1',cable:'male-male, schwarz',why:'Bringt GND auf die obere Schiene, für die Sensoren.'});
+
+  // 5 V auf Breadboard 2
+  add({id:'S1',g:'power5',kind:'usb',c:'var(--wusb)',pts:P(1675,178,'V',198),ends:['p','p'],
+    from:'Netzteil 9 V, mind. 1 A',to:'ELEGOO Power MB V2 · DC-Eingang',cable:'Hohlstecker 5,5 × 2,1 mm',why:'Das Modul macht daraus 5 V auf beiden Schienenpaaren von Breadboard 2. Es liefert höchstens etwa 700 mA.'});
+  add({id:'S2',g:'power5',c:'var(--wgnd)',pts:P(X2(11),RAIL2.topG,'V',RAIL2.botG),
+    from:'Breadboard 2 · obere blaue Schiene (−), Spalte 11',to:'Breadboard 2 · untere blaue Schiene (−), Spalte 11',cable:'male-male, schwarz',why:'Verbindet die beiden GND-Schienen. Ohne diese Brücke haben Powerbank und ESP32 keine gemeinsame Masse, und die LEDs bleiben dunkel.'});
+  add({id:'S5',g:'power5',c:'var(--wgnd)',pts:P(EX(21),BOT_Y,'V',1020,'H',1400,'V',512,'H',X2(3),'V',RAIL2.botG),ends:['f','m'],
+    from:'ESP32 · GND, untere Leiste ganz rechts',to:'Breadboard 2 · untere blaue Schiene (−), Spalte 3',cable:'female-male, schwarz',why:'Gemeinsame Masse zwischen ESP32 und ELEGOO-Modul. Ohne sie schalten Relais, Motor und LEDs unzuverlässig.'});
+
+  // Relais
+  add({id:'R1',g:'relay',c:'var(--wsig)',pts:P(bx('21'),BOT_Y,'V',992,'H',426,'V',698,'H',X(10),'V',R.a),ends:['f','m'],
+    from:'ESP32 · GPIO 21, untere Leiste',to:'Breadboard 1 · Loch a10',cable:'female-male, gelb',why:'Schaltsignal für das Relais.'});
+  add({id:'R2',g:'relay',c:'var(--wsig)',pts:P(1160,598,'H',X(10)),ends:['f','m'],
+    from:'Relais · S',to:'Breadboard 1 · Loch b10',cable:'female-male, gelb',why:'Das Signal aus Reihe 10 kommt am Relais an.'});
+  add({id:'R3',g:'relay',c:'var(--w5v)',pts:P(1160,622,'H',1142,'V',RAIL2.botV,'H',X2(1)),ends:['f','m'],
+    from:'Relais · +',to:'Breadboard 2 · untere rote Schiene (+ 5 V), Spalte 1',cable:'female-male, rot',why:'5 V für die Relaisspule vom ELEGOO-Modul.'});
+  add({id:'R4',g:'relay',c:'var(--wgnd)',pts:P(1160,646,'H',1150,'V',RAIL2.botG,'H',X2(2)),ends:['f','m'],
+    from:'Relais · −',to:'Breadboard 2 · untere blaue Schiene (−), Spalte 2',cable:'female-male, schwarz',why:'Masse für das Relais.'});
+  add({id:'R5',g:'relay',kind:'res',c:'var(--wgnd)',pts:[[X(10),R.c],[X(8),RAIL.botG]],bands:[BR,BK,OR,GD],blen:26,
+    from:'10-kΩ-Widerstand · Loch c10',to:'Breadboard 1 · untere blaue Schiene (−), Spalte 8',cable:'10 kΩ (braun, schwarz, orange)',why:'Hält das Relais aus, solange der ESP32 startet oder keinen Strom hat.'});
+
+  // Pumpe
+  add({id:'P1',g:'pump',c:'var(--w5v)',pts:P(X2(15),RAIL2.botV,'V',544,'H',1700,'V',740,'H',1350,'V',625,'H',1330),ends:['m','s'],
+    from:'Breadboard 2 · untere rote Schiene (+ 5 V), Spalte 15',to:'Relais · COM (mittlere Klemme)',cable:'male-male oder Litze, rot',why:'5 V vom ELEGOO-Modul in den Schalter.'});
+  add({id:'P2',g:'pump',c:'var(--w5v)',pts:P(1330,590,'H',1470,'V',664,'H',1505),ends:['s','s'],
+    from:'Relais · NO',to:'Pumpe · +',cable:'Litze, rot',why:'NO ist offen, solange das Relais aus ist. Fällt etwas aus, steht die Pumpe.'});
+  add({id:'P3',g:'pump',c:'var(--wgnd)',pts:P(1625,664,'V',690,'H',1690,'V',556,'H',X2(14),'V',RAIL2.botG),ends:['s','m'],
+    from:'Pumpe · −',to:'Breadboard 2 · untere blaue Schiene (−), Spalte 14',cable:'Litze, schwarz',why:'Masse für die Pumpe.'});
+  add({id:'P4',g:'pump',kind:'dio',c:'var(--wgnd)',pts:[[1505,664],[1625,664]],
+    from:'Freilaufdiode · Ring an Pumpe +',to:'Pumpe · −',cable:'1N4007 oder 1N5819',why:'Schluckt die Spannungsspitze beim Abschalten der Pumpe.'});
+
+  // Touch und Feuchte
+  PL.forEach(function(p){
+    var n=p.n, T=p.T, ex=p.ex, sx=ex+50, xb=ex+91, M=T+4;
+    add({id:'T'+n,g:'touch',c:'var(--wtouch)',pts:P(ex,167,'H',ex-42,'V',330,'H',ex,'V',R.j),ends:['c','m'],
+      from:'Kraut '+n+' · Edelstahlschraube',to:'Breadboard 1 · Loch j'+T,cable:'Litze oder Klingeldraht, violett',why:'Elektrode in der Erde. Das Kabel sitzt über der Erde unter Mutter und Scheibe.'});
+    add({id:'T'+n+'R',g:'touch',kind:'res',c:'var(--wtouch)',pts:[[ex,R.e],[ex,R.f]],bands:[BR,BK,RD,GD],blen:18,
+      from:'1-kΩ-Widerstand · Loch e'+T,to:'Loch f'+T+', über die Rille',cable:'1 kΩ (braun, schwarz, rot)',why:'Schützt den Touch-Pin vor fremder Spannung und statischer Entladung.'});
+    add({id:'T'+n+'E',g:'touch',c:'var(--wtouch)',pts:TE[n],ends:['f','m'],
+      from:'ESP32 · GPIO '+p.tg+', obere Leiste',to:'Breadboard 1 · Loch a'+T,cable:'female-male, violett',why:'Touch-Pin für Kraut '+n+'.'});
+
+    add({id:'F'+n+'A',g:'moist',c:'var(--waout)',pts:P(sx-10,104,'V',88,'H',xb+4,'V',352,'H',X(M),'V',R.j),ends:['f','m'],
+      from:'Feuchtesensor '+n+' · AOUT',to:'Breadboard 1 · Loch j'+M,cable:'Sensorkabel, Signalader',why:'Messwert des Sensors.'});
+    var bxM=X(M);
+    add({id:'F'+n+'B',g:'moist',kind:'arc',c:'var(--waout)',d:'M'+bxM+','+R.e+' C'+(bxM+15)+','+(R.e-6)+' '+(bxM+15)+','+(R.f+6)+' '+bxM+','+R.f,pts:[[bxM,R.e],[bxM,R.f]],
+      from:'Brücke · Loch e'+M,to:'Loch f'+M+', über die Rille',cable:'male-male, kurz',why:'Verbindet die beiden Hälften von Reihe '+M+'.'});
+    add({id:'F'+n+'E',g:'moist',c:'var(--waout)',pts:FE[n],ends:['f','m'],
+      from:'ESP32 · GPIO '+p.fg+', '+p.fh,to:'Breadboard 1 · Loch a'+M,cable:'female-male, blau',why:'Analogeingang für Feuchtesensor '+n+'.'});
+    add({id:'F'+n+'V',g:'moist',c:'var(--w3v3)',pts:P(sx,104,'V',92,'H',xb,'V',344,'H',X(T+3),'V',RAIL.topV),ends:['f','m'],
+      from:'Feuchtesensor '+n+' · VCC',to:'Breadboard 1 · obere rote Schiene (+ 3,3 V), Spalte '+(T+3),cable:'Sensorkabel, rote Ader',why:'Versorgung mit 3,3 V.'});
+    add({id:'F'+n+'G',g:'moist',c:'var(--wgnd)',pts:P(sx+10,104,'V',96,'H',xb-4,'V',336,'H',X(T+2),'V',RAIL.topG),ends:['f','m'],
+      from:'Feuchtesensor '+n+' · GND',to:'Breadboard 1 · obere blaue Schiene (−), Spalte '+(T+2),cable:'Sensorkabel, schwarze Ader',why:'Masse.'});
+  });
+
+  // Schrittmotor
+  [['M1','15','IN1',824,1110,920],['M2','16','IN2',816,1120,900],['M3','17','IN3',808,1130,880],['M4','18','IN4',800,1140,860]].forEach(function(m){
+    add({id:m[0],g:'step',c:'var(--wstep)',pts:P(tx(m[1]),TOP_Y,'V',m[3],'H',m[4],'V',m[5],'H',1180),ends:['f','f'],
+      from:'ESP32 · GPIO '+m[1]+', obere Leiste',to:'ULN2003 · '+m[2],cable:'female-female',why:'Steuersignal für Spule '+m[2].slice(2)+' des Motors.'});
+  });
+  add({id:'M5',g:'step',c:'var(--w5v)',pts:P(X2(7),RAIL2.botV,'V',840),ends:['m','f'],
+    from:'Breadboard 2 · untere rote Schiene (+ 5 V), Spalte 7',to:'ULN2003 · +',cable:'male-female, rot',why:'5 V für den Motor vom ELEGOO-Modul, nicht vom ESP32.'});
+  add({id:'M6',g:'step',c:'var(--wgnd)',pts:P(X2(8),RAIL2.botG,'V',840),ends:['m','f'],
+    from:'Breadboard 2 · untere blaue Schiene (−), Spalte 8',to:'ULN2003 · −',cable:'male-female, schwarz',why:'Masse für den Motortreiber.'});
+  add({id:'M7',g:'step',kind:'cable',c:'var(--wcable)',dash:'var(--wstep)',pts:P(1380,930,'H',1465),
+    from:'ULN2003 · Motorbuchse',to:'Schrittmotor 28BYJ-48',cable:'5-poliges Motorkabel',why:'Steckt nur in einer Richtung.'});
+
+  // LEDs
+  add({id:'L1',g:'led',c:'var(--wled)',pts:P(bx('40'),BOT_Y,'V',1028,'H',1410,'V',470,'H',X2(2),'V',R2.a),ends:['f','m'],
+    from:'ESP32 · GPIO 40, untere Leiste',to:'Breadboard 2 · Loch a2',cable:'female-male, grün',why:'Datensignal für alle 40 LEDs.'});
+  add({id:'L2',g:'led',kind:'res',c:'var(--wled)',pts:[[X2(2),R2.e],[X2(2),R2.f]],bands:[OR,OR,BR,GD],blen:18,
+    from:'330-Ω-Widerstand · Loch e2',to:'Breadboard 2 · Loch f2, über die Rille',cable:'330 Ω (orange, orange, braun)',why:'Dämpft Störungen auf der Datenleitung.'});
+  add({id:'L3',g:'led',c:'var(--wled)',pts:P(X2(2),R2.j,'V',-95,'H',1134),ends:['m','s'],
+    from:'Breadboard 2 · Loch j2',to:'Bügel · DIN (Anfang rechts)',cable:'Litze, grün, an den Streifen gelötet',why:'Daten in die erste LED (Nr. 0).'});
+  add({id:'PB1',g:'led',kind:'usb',c:'var(--wusb)',pts:P(1494,125,'H',1466),ends:['p','x'],
+    from:'Powerbank Intenso B10000 · USB-A',to:'Ladekabel, USB-C-Ende abgeschnitten',cable:'mitgeliefertes Ladekabel, aufgeschnitten',why:'Rote Ader = +5 V, schwarze = GND. Grüne und weisse Ader (Daten) werden nicht gebraucht, einzeln kürzen und isolieren.'});
+  add({id:'L4',g:'led',c:'var(--w5v)',pts:P(1440,102,'V',-106,'H',1134),ends:['s','s'],
+    from:'Ladekabel · rote Ader (+5 V), angelötet',to:'Bügel · 5V',cable:'Litze, rot, mind. 0,5 mm²',why:'Strom für alle 40 LEDs. Die Powerbank liefert höchstens 2,4 A, deshalb im Code auf 1500 mA begrenzen. Direkt am Bügel 1000 µF zwischen 5V und GND setzen.'});
+  add({id:'L10',g:'led',c:'var(--wgnd)',pts:P(X2(13),150,'V',RAIL2.topG),ends:['s','m'],
+    from:'Ladekabel · schwarze Ader (GND), angelötet',to:'Breadboard 2 · obere blaue Schiene (−), Spalte 13',cable:'Litze, schwarz',why:'Gemeinsame Masse, damit das Datensignal vom ESP32 sauber an den LEDs ankommt.'});
+  add({id:'L5',g:'led',c:'var(--wgnd)',pts:P(X2(1),RAIL2.topG,'V',-84,'H',1134),ends:['m','s'],
+    from:'Breadboard 2 · obere blaue Schiene (−), Spalte 1',to:'Bügel · GND',cable:'Litze, schwarz, mind. 0,5 mm²',why:'Masse für die LEDs.'});
+  var CH=[[404,-95,'Bügel · DOUT (Ende links, nach LED 27)','Kraut 1 · DIN'],[PL[0].cx+11,257,'Kraut 1 · DOUT','Kraut 2 · DIN'],[PL[1].cx+11,257,'Kraut 2 · DOUT','Kraut 3 · DIN'],[PL[2].cx+11,257,'Kraut 3 · DOUT','Kraut 4 · DIN']];
+  CH.forEach(function(c,i){
+    var to=PL[i].cx-21;
+    var pts = i===0 ? P(c[0],c[1],'H',392,'V',257,'H',to) : P(c[0],c[1],'H',to);
+    add({id:'L'+(6+i),g:'led',kind:'cable',c:'var(--wcable)',dash:'var(--wled)',pts:pts,
+      from:c[2],to:c[3],cable:'3 Adern gelötet: 5V, Daten, GND',why:'Verbindet die Stücke in Reihe. 5V an 5V, DOUT an DIN, GND an GND.'});
+  });
+
+  // Lichtsensor KY-054
+  add({id:'K1',g:'light',c:'var(--wlight)',pts:P(354,-30,'V',340,'H',X(11),'V',R.j),ends:['f','m'],
+    from:'Lichtsensor KY-054 · S',to:'Breadboard 1 · Loch j11',cable:'female-male, grün',why:'Messsignal des Phototransistors.'});
+  add({id:'K2',g:'light',kind:'arc',c:'var(--wlight)',d:'M'+X(11)+','+R.e+' C'+(X(11)-15)+','+(R.e-6)+' '+(X(11)-15)+','+(R.f+6)+' '+X(11)+','+R.f,pts:[[X(11),R.e],[X(11),R.f]],
+    from:'Brücke · Loch e11',to:'Loch f11, über die Rille',cable:'male-male, kurz',why:'Verbindet die beiden Hälften von Reihe 11.'});
+  add({id:'K3',g:'light',c:'var(--wlight)',pts:P(tx('6'),TOP_Y,'V',786,'H',X(11),'V',R.a),ends:['f','m'],
+    from:'ESP32 · GPIO 6, obere Leiste (6. Pin von rechts)',to:'Breadboard 1 · Loch a11',cable:'female-male, grün',why:'Analogeingang (ADC1) für den Lichtsensor.'});
+  add({id:'K4',g:'light',c:'var(--w3v3)',pts:P(342,-30,'V',348,'H',X(7),'V',RAIL.topV),ends:['f','m'],
+    from:'Lichtsensor KY-054 · + (mittlerer Pin)',to:'Breadboard 1 · obere rote Schiene (+ 3,3 V), Spalte 7',cable:'female-male, orange',why:'Nur 3,3 V. Mit 5 V wäre das Signal zu hoch für den ESP32.'});
+  add({id:'K5',g:'light',c:'var(--wgnd)',pts:P(330,-30,'V',356,'H',X(3),'V',RAIL.topG),ends:['f','m'],
+    from:'Lichtsensor KY-054 · −',to:'Breadboard 1 · obere blaue Schiene (−), Spalte 3',cable:'female-male, schwarz',why:'Masse.'});
+
+  // Raspberry Pi
+  add({id:'PI1',g:'pi',kind:'usb',c:'var(--wusb)',pts:P(348,870,'H',448),ends:['p','p'],
+    from:'Raspberry Pi · USB-A',to:'ESP32 · Buchse UART (COM)',cable:'USB-A auf USB-C',why:'Strom und Daten für den ESP32. Auf dem Pi erscheint er als /dev/ttyUSB0 oder /dev/ttyACM0.'});
+  add({id:'PI2',g:'pi',kind:'ribbon',c:'var(--wribbon)',pts:P(240,500,'V',730),
+    from:'Touch Display 2 · Flachband',to:'Pi 4 · DSI-Buchse (DISPLAY)',cable:'Flachbandkabel, 15-polig auf Pi-Seite',why:'Bildsignal und Touch. Der Pi 4 hat die breite 15-polige Buchse.'});
+  add({id:'PI3',g:'pi',c:'var(--w5v)',pts:P(120,500,'V',686,'H',72,'V',748,'H',104),ends:['c','f'],
+    from:'Display · rotes Kabel',to:'Pi · Pin 2 (5 V)',cable:'Kabel vom Display',why:'Strom für das Display.'});
+  add({id:'PI4',g:'pi',c:'var(--wgnd)',pts:P(100,500,'V',670,'H',58,'V',770,'H',104),ends:['c','f'],
+    from:'Display · schwarzes Kabel',to:'Pi · Pin 6 (GND)',cable:'Kabel vom Display',why:'Masse für das Display.'});
+  add({id:'PI5',g:'pi',kind:'ribbon',c:'var(--wribbon)',pts:P(305,620,'V',730),
+    from:'Kamera · Flachband',to:'Pi 4 · CSI-Buchse (CAMERA)',cable:'15-polig, ca. 60 cm',why:'Der Pi 4 hat die breite 15-polige Buchse, ein Adapterkabel braucht ihr nicht.'});
+  add({id:'PI6',g:'pi',kind:'usb',c:'var(--wusb)',pts:P(151,1005,'V',974),ends:['p','p'],
+    from:'Netzteil 15 W (5,1 V, 3 A)',to:'Pi 4 · USB-C',cable:'USB-C',why:'Offizielles Pi-4-Netzteil. Versorgt Pi, Display und ESP32.'});
+  add({id:'PI7',g:'pi',kind:'air',c:'var(--muted)',pts:P(305,974,'V',1005),
+    from:'Musikbox',to:'Pi 4 · Bluetooth oder 3,5-mm-Klinke',cable:'kabellos oder Klinkenkabel',why:'Der Pi 4 hat eine Klinkenbuchse, Bluetooth geht auch.'});
+
+  var GROUPS = [
+    {k:'all',    name:'Alles',        c:'var(--ink)'},
+    {k:'power',  name:'3,3 V',        c:'var(--w3v3)', hint:'Breadboard 1: Die roten Schienen führen 3,3 V vom ESP32 für die Sensoren, die blauen GND. Oben und unten sind über zwei Brücken an Spalte 1 verbunden.'},
+    {k:'power5', name:'5 V',          c:'var(--w5v)',  hint:'Das ELEGOO Power MB V2 sitzt am rechten Ende von Breadboard 2 und speist beide Schienenpaare mit 5 V. Höchstens ca. 700 mA: Relais, Motor und Pumpe ja, LEDs nein. GND ist über S5 mit dem ESP32 verbunden, die Brücke S2 verbindet obere und untere GND-Schiene.'},
+    {k:'relay',  name:'Relais',       c:'var(--wsig)', hint:'Signal über Reihe 10 auf Breadboard 1. Strom für die Spule kommt von Breadboard 2.'},
+    {k:'pump',   name:'Pumpe',        c:'#a33a2f',     hint:'Die Pumpe hängt am ELEGOO-Modul: 5 V von Breadboard 2 an COM, NO an Pumpe +, Pumpe − an GND. Die Freilaufdiode direkt an der Pumpe bleibt Pflicht.'},
+    {k:'touch',  name:'Touch',        c:'var(--wtouch)', hint:'Schraube auf Reihe j, 1 kΩ über die Rille von e nach f, Reihe a zum Touch-Pin. Reihen 2, 12, 19, 26.'},
+    {k:'moist',  name:'Feuchte',      c:'var(--waout)', hint:'Signal auf Reihe j, Brücke über die Rille, Reihe a zum ESP32. VCC und GND kommen von den oberen Schienen.'},
+    {k:'step',   name:'Motor',        c:'var(--wstep)', hint:'GPIO 15 bis 18 an IN1 bis IN4 des ULN2003. Der Motor bekommt 5 V von Breadboard 2, nicht vom ESP32.'},
+    {k:'led',    name:'LEDs',         c:'var(--wled)', hint:'GPIO 40 über 330 Ω an DIN des Bügels. Das Signal läuft dann in Reihe durch die vier 3er-Stücke. LED 0 bis 27 Bügel, 28 bis 39 die Pflanzen. Strom kommt aus der Powerbank Intenso B10000 über ihr aufgeschnittenes Ladekabel, ihr GND ist mit Breadboard 2 verbunden.'},
+    {k:'light',  name:'Licht',        c:'var(--wlight)', hint:'KY-054 am Bügel: S über Reihe 11 an GPIO 6, + an 3,3 V, − an GND. Nie an 5 V anschliessen.'},
+    {k:'pi',     name:'Raspberry Pi', c:'var(--wusb)', hint:'Der Pi versorgt den ESP32 über USB und spricht über dasselbe Kabel mit ihm.'}
+  ];
+  var GN = {}; GROUPS.forEach(function(g){ GN[g.k]=g; });
+
+  /* ---------- Statische Zeichnung ---------- */
+  var s = '';
+  function el(x){ s += x; }
+
+  // Legende
+  el('<text class="zl" x="60" y="78">Kabelfarben</text>');
+  [['var(--w5v)','5 V',4],['var(--w3v3)','3,3 V',4],['var(--wgnd)','GND (Masse)',4],['var(--wtouch)','Touch-Signal',4],['var(--waout)','Feuchte-Signal',4],['var(--wsig)','Relais-Signal',4],['var(--wstep)','Motor-Signal',4],['var(--wled)','LED-Daten',4],['var(--wlight)','Licht-Signal',4],['var(--wcable)','Mehradriges Kabel',7],['var(--wusb)','USB-Kabel',6],['var(--wribbon)','Flachbandkabel',10]].forEach(function(l,i){
+    var y=104+i*22;
+    el('<line x1="60" y1="'+y+'" x2="94" y2="'+y+'" style="stroke:'+l[0]+';stroke-width:'+l[2]+';stroke-linecap:round"/><text class="zs" x="106" y="'+(y+4)+'">'+l[1]+'</text>');
+  });
+
+  // LED-Bügel
+  el('<text class="zl" x="404" y="-126">LED-Bügel über den Pflanzen · 28 LEDs</text>');
+  el('<text class="zs" x="1130" y="-126" text-anchor="end">Datenrichtung: von rechts nach links</text>');
+  el('<rect class="ledbar" x="398" y="-118" width="738" height="46" rx="5"/>');
+  el('<rect class="ledpcb" x="404" y="-112" width="726" height="34" rx="2"/>');
+  for(var li=0; li<28; li++){
+    var lx = 1092 - li*(660/27);
+    el('<rect class="led" x="'+(lx-5.5)+'" y="-100.5" width="11" height="11" rx="2"/>');
+    if(li===0||li===9||li===18||li===27) el('<text class="led-t" x="'+lx+'" y="-104" text-anchor="middle">'+li+'</text>');
+  }
+  el('<text class="led-t" x="1110" y="-103">5V</text><text class="led-t" x="1110" y="-92">DIN</text><text class="led-t" x="1110" y="-81">GND</text>');
+  el('<text class="led-t" x="408" y="-81">DOUT</text>');
+
+  // Lichtsensor KY-054 am Bügel
+  el('<rect x="312" y="-122" width="60" height="82" rx="4" fill="#1f2a35"/>');
+  el('<circle cx="342" cy="-104" r="8" fill="#e8eef2" stroke="#9aa6b0"/><circle cx="342" cy="-104" r="3" fill="#2b3640"/>');
+  el('<rect x="333" y="-88" width="18" height="6" rx="3" fill="#e6d2ab"/>');
+  [['−',330],['+',342],['S',354]].forEach(function(p){ el('<rect class="pin" x="'+(p[1]-2)+'" y="-40" width="4" height="10"/><text class="sensor-t" x="'+p[1]+'" y="-48" text-anchor="middle">'+p[0]+'</text>'); });
+  el('<text class="zl" x="300" y="-100" text-anchor="end">Lichtsensor</text><text class="pl-sub" x="300" y="-84" text-anchor="end">KY-054 · GPIO 6</text><text class="pl-sub" x="300" y="-68" text-anchor="end">am Bügel, nach oben</text>');
+
+  // Pflanzen
+  var LEAVES=[[-26,178,24,10,-25],[24,172,24,10,25],[-30,148,26,11,-35],[28,140,26,11,32],[-22,116,22,10,-45],[22,108,22,10,42],[-12,86,18,8,-55],[12,80,18,8,52],[0,66,12,7,0]];
+  PL.forEach(function(p){
+    var ex=p.ex, cx=p.cx, sx=cx+25, st=cx-2;
+    el('<text class="pl-name" x="'+cx+'" y="26" text-anchor="middle">Kraut '+p.n+'</text>');
+    el('<text class="pl-sub" x="'+cx+'" y="43" text-anchor="middle">Touch '+p.tg+' · Feuchte '+p.fg+'</text>');
+    el('<rect class="saucer" x="'+(cx-56)+'" y="288" width="112" height="9" rx="4"/>');
+    el('<path class="pot" d="M'+(cx-48)+',206 L'+(cx+48)+',206 L'+(cx+38)+',288 L'+(cx-38)+',288 Z"/>');
+    el('<rect class="soil" x="'+(cx-47)+'" y="206" width="94" height="14"/>');
+    el('<path class="stem" d="M'+st+',208 C'+(st-4)+',170 '+(st+3)+',120 '+st+',66"/>');
+    LEAVES.forEach(function(L,i){ el('<ellipse class="'+(i%2?'leaf2':'leaf')+'" cx="'+(st+L[0])+'" cy="'+L[1]+'" rx="'+L[2]+'" ry="'+L[3]+'" transform="rotate('+L[4]+' '+(st+L[0])+' '+L[1]+')"/>'); });
+    el('<rect class="pot-rim" x="'+(cx-54)+'" y="196" width="108" height="12" rx="3"/>');
+    el('<rect class="steel" x="'+(ex-2)+'" y="172" width="4" height="88"/>');
+    for(var y=214;y<258;y+=6) el('<line class="thread" x1="'+(ex-3)+'" y1="'+y+'" x2="'+(ex+3)+'" y2="'+(y+2)+'"/>');
+    el('<rect class="steel" x="'+(ex-8)+'" y="155" width="16" height="6" rx="2"/>');
+    el('<rect class="steel2" x="'+(ex-9)+'" y="171" width="18" height="4" rx="1"/>');
+    el('<rect class="nut" x="'+(ex-7)+'" y="162" width="14" height="9" rx="1"/>');
+    el('<path class="sensor" d="M'+(sx-13)+',148 L'+(sx+13)+',148 L'+(sx+13)+',250 L'+sx+',264 L'+(sx-13)+',250 Z"/>');
+    el('<rect class="sensor" x="'+(sx-20)+'" y="112" width="40" height="38" rx="3"/>');
+    el('<line class="sensor-mark" x1="'+(sx-13)+'" y1="214" x2="'+(sx+13)+'" y2="214"/>');
+    [['A',-10],['V',0],['G',10]].forEach(function(t){ el('<rect class="pin" x="'+(sx+t[1]-2)+'" y="102" width="4" height="10"/><text class="sensor-t" x="'+(sx+t[1])+'" y="126" text-anchor="middle">'+t[0]+'</text>'); });
+    el('<text class="sensor-t2" x="'+sx+'" y="142" text-anchor="middle">Feuchte</text>');
+    // 3er-LED-Stück innen am Trog
+    el('<rect class="ledpcb" x="'+(cx-21)+'" y="251" width="32" height="12" rx="2"/>');
+    [-15,-5,5].forEach(function(d){ el('<rect class="led" x="'+(cx+d-3.5)+'" y="253.5" width="7" height="7" rx="1.5"/>'); });
+    el('<text class="led-t" x="'+(cx-5)+'" y="278" text-anchor="middle">LED '+p.led+'</text>');
+  });
+
+  // Breadboard 1
+  el('<rect class="bb-body" x="400" y="360" width="698" height="330" rx="8"/>');
+  el('<rect class="bb-gap" x="404" y="518" width="690" height="16" rx="2"/>');
+  el('<text class="bb-gap-t" x="606" y="529.5" text-anchor="middle">Breadboard 1</text>');
+  [[368,'rail-blue'],[400,'rail-red'],[650,'rail-red'],[682,'rail-blue']].forEach(function(r){ el('<line class="'+r[1]+'" x1="420" y1="'+r[0]+'" x2="1078" y2="'+r[0]+'"/>'); });
+  var USEDN={2:1,3:1,6:1,7:1,10:1,11:1,12:1,16:1,19:1,23:1,26:1,30:1};
+  for(var n=1;n<=30;n++){
+    var x=X(n);
+    [RAIL.topG,RAIL.topV,RAIL.botV,RAIL.botG].forEach(function(y){ el('<rect class="bb-hole" x="'+(x-3)+'" y="'+(y-3)+'" width="6" height="6" rx="1"/>'); });
+    for(var k in R) el('<rect class="bb-hole" x="'+(x-3)+'" y="'+(R[k]-3)+'" width="6" height="6" rx="1"/>');
+    var cls='bb-txt'+(USEDN[n]?' used':'');
+    el('<text class="'+cls+'" x="'+x+'" y="419" text-anchor="middle">'+n+'</text><text class="'+cls+'" x="'+x+'" y="641" text-anchor="middle">'+n+'</text>');
+  }
+  for(var k2 in R){ el('<text class="bb-txt" x="414" y="'+(R[k2]+3.5)+'" text-anchor="middle">'+k2+'</text><text class="bb-txt" x="1086" y="'+(R[k2]+3.5)+'" text-anchor="middle">'+k2+'</text>'); }
+  [[RAIL.topG,'rail-t-blue','−'],[RAIL.topV,'rail-t-red','+'],[RAIL.botV,'rail-t-red','+'],[RAIL.botG,'rail-t-blue','−']].forEach(function(r){
+    el('<text class="'+r[1]+'" x="412" y="'+(r[0]+4)+'" text-anchor="middle">'+r[2]+'</text><text class="'+r[1]+'" x="1088" y="'+(r[0]+4)+'" text-anchor="middle">'+r[2]+'</text>');
+  });
+  el('<text class="rail-t-blue" x="1104" y="380">GND</text><text class="rail-t-red" x="1104" y="396">3V3</text><text class="rail-t-red" x="1104" y="662">3V3</text><text class="rail-t-blue" x="1104" y="678">GND</text>');
+
+  // Breadboard 2 (5 V)
+  el('<rect class="bb-body" x="1200" y="222" width="440" height="294" rx="8"/>');
+  el('<rect class="bb-gap" x="1204" y="362" width="432" height="14" rx="2"/>');
+  el('<text class="bb-gap-t" x="1440" y="372.5" text-anchor="middle">Breadboard 2 · 5 V</text>');
+  [[229,'rail-blue'],[259,'rail-red'],[479,'rail-red'],[509,'rail-blue']].forEach(function(r){ el('<line class="'+r[1]+'" x1="1214" y1="'+r[0]+'" x2="1616" y2="'+r[0]+'"/>'); });
+  var USED2={1:1,2:1,3:1,7:1,8:1,11:1,13:1,14:1,15:1};
+  for(var m=1;m<=20;m++){
+    var x2=X2(m);
+    [RAIL2.topG,RAIL2.topV,RAIL2.botV,RAIL2.botG].forEach(function(y){ el('<rect class="bb-hole" x="'+(x2-3)+'" y="'+(y-3)+'" width="6" height="6" rx="1"/>'); });
+    for(var k3 in R2) el('<rect class="bb-hole" x="'+(x2-3)+'" y="'+(R2[k3]-3)+'" width="6" height="6" rx="1"/>');
+    var c2='bb-txt'+(USED2[m]?' used':'');
+    el('<text class="'+c2+'" x="'+x2+'" y="273" text-anchor="middle">'+m+'</text><text class="'+c2+'" x="'+x2+'" y="474" text-anchor="middle">'+m+'</text>');
+  }
+  for(var k4 in R2){ el('<text class="bb-txt" x="1211" y="'+(R2[k4]+3.5)+'" text-anchor="middle">'+k4+'</text><text class="bb-txt" x="1626" y="'+(R2[k4]+3.5)+'" text-anchor="middle">'+k4+'</text>'); }
+  [[RAIL2.topG,'rail-t-blue','−'],[RAIL2.topV,'rail-t-red','+'],[RAIL2.botV,'rail-t-red','+'],[RAIL2.botG,'rail-t-blue','−']].forEach(function(r){
+    el('<text class="'+r[1]+'" x="1208" y="'+(r[0]+4)+'" text-anchor="middle">'+r[2]+'</text>');
+  });
+
+  // Powerbank für die LEDs
+  el('<rect class="dev" x="1500" y="92" width="140" height="74" rx="10"/>');
+  el('<text class="dev-t" x="1570" y="114" text-anchor="middle">Intenso B10000</text><text class="dev-s" x="1570" y="132" text-anchor="middle">Powerbank 10 000 mAh</text><text class="dev-s" x="1570" y="148" text-anchor="middle">max. 2,4 A · 12 W</text>');
+  el('<rect class="usb-port" x="1494" y="116" width="8" height="18" rx="1"/>');
+  el('<path d="M1466,122 L1450,122 L1440,112" style="stroke:#d23a2e;stroke-width:2.5;fill:none"/><path d="M1466,128 L1465,138" style="stroke:#1d2327;stroke-width:2.5;fill:none"/>');
+  el('<path d="M1466,124 L1455,127 M1466,126 L1457,133" style="stroke:#8fae84;stroke-width:1.6;fill:none"/><circle cx="1455" cy="127" r="2" fill="#8a8f94"/><circle cx="1457" cy="133" r="2" fill="#8a8f94"/>');
+  el('<rect x="1433" y="102" width="14" height="14" rx="3" fill="#3a3f45"/><rect x="1458" y="136" width="14" height="14" rx="3" fill="#3a3f45"/>');
+  el('<text class="dev-s" x="1452" y="170" text-anchor="end" style="fill:var(--muted)">Ladekabel verlötet</text>');
+
+  // ELEGOO Power MB V2 am rechten Ende von Breadboard 2
+  el('<rect x="1584" y="212" width="116" height="318" rx="6" fill="#a3262a" stroke="#6e1518"/>');
+  [RAIL2.topG,RAIL2.topV,RAIL2.botV,RAIL2.botG].forEach(function(y){ [X2(19),X2(20)].forEach(function(x){ el('<rect class="pin" x="'+(x-3)+'" y="'+(y-3)+'" width="6" height="6"/>'); }); });
+  el('<rect x="1594" y="268" width="22" height="12" rx="2" fill="#f2c94c"/><text class="dev-s" x="1622" y="278" style="fill:#ffffff">5V</text>');
+  el('<rect x="1594" y="458" width="22" height="12" rx="2" fill="#f2c94c"/><text class="dev-s" x="1622" y="468" style="fill:#ffffff">5V</text>');
+  el('<text class="dev-t" x="1642" y="330" text-anchor="middle">ELEGOO</text><text class="dev-t" x="1642" y="346" text-anchor="middle">Power MB V2</text><text class="dev-s" x="1642" y="364" text-anchor="middle">max. ca. 700 mA</text>');
+  el('<rect x="1660" y="198" width="30" height="24" rx="3" fill="#151515"/><text class="dev-s" x="1675" y="214" text-anchor="middle" style="fill:#ffffff">DC</text>');
+  el('<rect x="1686" y="392" width="14" height="22" rx="2" fill="#c9ced3"/><text class="dev-s" x="1680" y="407" text-anchor="end" style="fill:#ffffff">USB</text>');
+  el('<rect x="1606" y="420" width="18" height="10" rx="2" fill="#e8e8e8"/><text class="dev-s" x="1630" y="429" style="fill:#ffffff">Schalter</text><circle cx="1598" cy="440" r="3.5" fill="#7dff7a"/>');
+  el('<rect class="dev" x="1648" y="130" width="68" height="48" rx="6"/><text class="dev-t" x="1682" y="150" text-anchor="middle">Netzteil</text><text class="dev-s" x="1682" y="167" text-anchor="middle">9 V</text>');
+
+  // ESP32-S3
+  el('<rect class="esp-body" x="468" y="828" width="632" height="140" rx="7"/>');
+  el('<rect class="esp-shield" x="1000" y="840" width="92" height="116" rx="3"/>');
+  el('<text class="esp-shield-t" x="1046" y="892" text-anchor="middle">ESP32-S3</text><text class="esp-shield-t" x="1046" y="906" text-anchor="middle">WROOM-1</text>');
+  el('<rect class="usb-port" x="448" y="858" width="24" height="24" rx="4"/><rect class="usb-port" x="448" y="906" width="24" height="24" rx="4"/>');
+  el('<text class="esp-small" x="478" y="874">UART</text><text class="esp-small" x="478" y="922">USB</text>');
+  el('<text class="esp-name" x="760" y="904" text-anchor="middle">ESP32-S3-DevKitC-1</text>');
+  var UT={0:1,2:1,3:1,4:1,5:1,11:1,12:1,13:1,14:1,16:1,17:1,18:1,20:1}, UB={4:1,14:1,17:1,18:1,21:1};
+  TOP.forEach(function(l,i){ var x=EX(i); el('<rect class="pin" x="'+(x-5)+'" y="835" width="10" height="10" rx="1"/><text class="esp-lbl'+(UT[i]?' used':'')+'" transform="translate('+(x+3.5)+',852) rotate(-90)" text-anchor="end">'+l+'</text>'); });
+  BOT.forEach(function(l,i){ var x=EX(i); el('<rect class="pin" x="'+(x-5)+'" y="951" width="10" height="10" rx="1"/><text class="esp-lbl'+(UB[i]?' used':'')+'" transform="translate('+(x+3.5)+',944) rotate(-90)" text-anchor="start">'+l+'</text>'); });
+
+  // Relais
+  el('<rect class="relay-pcb" x="1160" y="560" width="170" height="130" rx="6"/>');
+  el('<rect class="relay-cube" x="1194" y="574" width="68" height="76" rx="3"/>');
+  el('<text class="relay-t" x="1228" y="600" text-anchor="middle">SONGLE</text><text class="relay-t2" x="1228" y="616" text-anchor="middle">SRD-05VDC</text><text class="relay-t2" x="1228" y="630" text-anchor="middle">SL-C</text>');
+  [['S',598],['+',622],['−',646]].forEach(function(p){ el('<rect class="pin" x="1150" y="'+(p[1]-3)+'" width="12" height="6"/><text class="relay-pin-t" x="1174" y="'+(p[1]+4)+'" text-anchor="middle">'+p[0]+'</text>'); });
+  el('<rect class="relay-term" x="1298" y="572" width="28" height="104" rx="3"/>');
+  [['NO',590],['COM',625],['NC',660]].forEach(function(t){ el('<circle class="screw" cx="1312" cy="'+t[1]+'" r="7"/><line class="screw-slot" x1="1307" y1="'+(t[1]-5)+'" x2="1317" y2="'+(t[1]+5)+'"/><text class="relay-t2" x="1292" y="'+(t[1]+3)+'" text-anchor="end">'+t[0]+'</text>'); });
+  el('<circle cx="1180" cy="674" r="3.5" fill="#ff5a4a"/>');
+  el('<text class="zl" x="1245" y="712" text-anchor="middle">Relaismodul</text>');
+
+  // Pumpe
+  el('<rect class="water" x="1466" y="562" width="200" height="86" rx="8"/>');
+  el('<rect class="pump" x="1486" y="576" width="160" height="58" rx="10"/>');
+  el('<text class="dev-t" x="1566" y="602" text-anchor="middle">Pumpe</text><text class="dev-s" x="1566" y="620" text-anchor="middle">im Wasserglas</text>');
+  el('<path class="lead" d="M1505,634 L1505,664 M1625,634 L1625,664"/>');
+  el('<text class="zs" x="1494" y="658" text-anchor="end">+</text><text class="zs" x="1636" y="658">−</text>');
+
+  // ULN2003 und Motor
+  el('<rect class="uln" x="1180" y="840" width="200" height="150" rx="6"/>');
+  el('<rect class="chip-ic" x="1240" y="890" width="76" height="40" rx="2"/><text class="chip-t" x="1278" y="914" text-anchor="middle">ULN2003</text>');
+  [['IN4',860],['IN3',880],['IN2',900],['IN1',920]].forEach(function(p){ el('<rect class="pin" x="1170" y="'+(p[1]-3)+'" width="12" height="6"/><text class="uln-t" x="1188" y="'+(p[1]+3.5)+'">'+p[0]+'</text>'); });
+  [['+',X2(7)],['−',X2(8)]].forEach(function(p){ el('<rect class="pin" x="'+(p[1]-3)+'" y="832" width="6" height="12"/><text class="uln-t" x="'+p[1]+'" y="858" text-anchor="middle">'+p[0]+'</text>'); });
+  el('<rect x="1370" y="910" width="12" height="40" rx="2" fill="#f2f2ee"/>');
+  [0,1,2,3].forEach(function(i){ el('<circle cx="'+(1250+i*14)+'" cy="962" r="3.5" fill="#ff5a4a"/>'); });
+  el('<text class="uln-t" x="1250" y="980">A B C D</text>');
+  el('<text class="zl" x="1280" y="1012" text-anchor="middle">Motortreiber</text>');
+  el('<circle class="motor" cx="1520" cy="930" r="56"/><circle class="motor2" cx="1520" cy="930" r="30"/><circle cx="1520" cy="912" r="6" fill="#d8dde1"/>');
+  el('<text class="zl" x="1520" y="1012" text-anchor="middle">Schrittmotor 28BYJ-48</text>');
+
+  // Raspberry Pi
+  el('<text class="zl" x="60" y="380">Raspberry Pi 4 mit Display und Kamera</text>');
+  el('<rect class="disp" x="60" y="390" width="300" height="110" rx="8"/><rect class="screen" x="72" y="400" width="276" height="84" rx="3"/>');
+  el('<text class="dev-t" x="210" y="440" text-anchor="middle">Touch Display 2</text><text class="dev-s" x="210" y="458" text-anchor="middle">7 Zoll</text>');
+  el('<rect class="cam" x="262" y="540" width="86" height="80" rx="6"/><circle class="lens" cx="305" cy="574" r="17"/><circle class="lens2" cx="305" cy="574" r="8"/><text class="dev-s" x="305" y="608" text-anchor="middle">Kamera</text>');
+  el('<rect class="pi-pcb" x="90" y="730" width="250" height="240" rx="10"/>');
+  el('<rect class="pi-hdr" x="97" y="741" width="26" height="224" rx="2"/>');
+  for(var kk=0;kk<20;kk++){ var yy=748+11*kk; el('<rect class="pin" x="100.5" y="'+(yy-3.5)+'" width="7" height="7"/><rect class="pin" x="112.5" y="'+(yy-3.5)+'" width="7" height="7"/>'); }
+  el('<text class="dev-s" x="130" y="752" style="fill:#ffffff">Pin 2 · 5 V</text><text class="dev-s" x="130" y="774" style="fill:#ffffff">Pin 6 · GND</text>');
+  el('<rect class="pi-port" x="216" y="730" width="48" height="12" rx="2"/><rect class="pi-port" x="281" y="730" width="48" height="12" rx="2"/>');
+  el('<text class="dev-s" x="240" y="758" text-anchor="middle" style="fill:#ffffff">DSI</text><text class="dev-s" x="305" y="758" text-anchor="middle" style="fill:#ffffff">CSI</text>');
+  el('<rect class="usb-port" x="322" y="857" width="26" height="26" rx="2"/><rect class="usb-port" x="322" y="897" width="26" height="26" rx="2"/>');
+  el('<text class="dev-s" x="314" y="874" text-anchor="end" style="fill:#ffffff">USB-A</text>');
+  el('<text class="dev-t" x="230" y="940" text-anchor="middle" style="font-size:17px">Raspberry Pi 4 Model B</text>');
+  el('<rect class="usb-port" x="141" y="966" width="20" height="8" rx="2"/>');
+  el('<rect class="dev" x="90" y="1005" width="140" height="58" rx="6"/><text class="dev-t" x="160" y="1030" text-anchor="middle">Netzteil 15 W</text><text class="dev-s" x="160" y="1047" text-anchor="middle">5,1 V · 3 A</text>');
+  el('<rect class="dev" x="255" y="1005" width="100" height="58" rx="16"/><text class="dev-t" x="305" y="1030" text-anchor="middle">Musikbox</text><text class="dev-s" x="305" y="1047" text-anchor="middle">BT / Klinke</text>');
+
+  /* ---------- Kabel zeichnen ---------- */
+  function endMark(p,t,c){
+    if(t==='x') return '';
+    if(t==='f') return '<rect class="housing" x="'+(p[0]-5.5)+'" y="'+(p[1]-6.5)+'" width="11" height="13" rx="2" style="stroke:'+c+'"/>';
+    if(t==='p') return '<rect x="'+(p[0]-7)+'" y="'+(p[1]-6)+'" width="14" height="12" rx="2" fill="#3a3f45"/>';
+    if(t==='c') return '<circle class="end" cx="'+p[0]+'" cy="'+p[1]+'" r="3.2" style="fill:'+c+'"/>';
+    return '<circle class="end" cx="'+p[0]+'" cy="'+p[1]+'" r="3.8" style="fill:'+c+'"/>';
+  }
+  function bodyOn(a,b,L,inner){
+    var mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2, ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
+    return '<g transform="translate('+mx+','+my+') rotate('+ang+')">'+inner(L)+'</g>';
+  }
+  function wireSVG(w){
+    var g='<g class="wire" data-id="'+w.id+'">', d=w.d||D(w.pts), a=w.pts[0], b=w.pts[w.pts.length-1];
+    if(w.kind==='res'){
+      g+='<path class="halo" d="'+d+'" style="stroke-width:7"/><path class="core" d="'+d+'" style="stroke:#9b9b9b;stroke-width:2;--hw:3"/>';
+      g+=bodyOn(a,b,w.blen,function(L){ var h='<rect class="res-body" x="'+(-L/2)+'" y="-4.5" width="'+L+'" height="9" rx="4"/>', xs=[-L/2+3.5,-L/2+6.5,-L/2+9.5,L/2-4.5];
+        w.bands.forEach(function(col,i){ h+='<rect x="'+xs[i]+'" y="-4.5" width="2" height="9" fill="'+col+'"/>'; }); return h; });
+      g+='<circle class="end" cx="'+a[0]+'" cy="'+a[1]+'" r="2.6" style="fill:#9b9b9b"/><circle class="end" cx="'+b[0]+'" cy="'+b[1]+'" r="2.6" style="fill:#9b9b9b"/>';
+    } else if(w.kind==='dio'){
+      g+='<path class="halo" d="'+d+'" style="stroke-width:7"/><path class="core" d="'+d+'" style="stroke:#8a8f94;stroke-width:2;--hw:3"/>';
+      g+=bodyOn(a,b,36,function(L){ return '<rect class="dio-body" x="'+(-L/2)+'" y="-6" width="'+L+'" height="12" rx="3"/><rect class="dio-ring" x="'+(-L/2+3)+'" y="-6" width="5" height="12"/>'; });
+      g+='<circle class="end" cx="'+a[0]+'" cy="'+a[1]+'" r="3.4" style="fill:#4b5258"/><circle class="end" cx="'+b[0]+'" cy="'+b[1]+'" r="3.4" style="fill:#4b5258"/>';
+    } else if(w.kind==='cap'){
+      var ld='M'+(a[0]+4)+',214 L'+a[0]+','+a[1]+' M'+(b[0]-4)+',214 L'+b[0]+','+b[1];
+      g+='<path class="halo" d="'+ld+'" style="stroke-width:6"/><path class="core" d="'+ld+'" style="stroke:#9b9b9b;stroke-width:2;--hw:3"/>';
+      g+='<rect class="cap" x="'+(a[0]-2)+'" y="182" width="24" height="32" rx="5"/><rect class="cap-stripe" x="'+(a[0]+1)+'" y="184" width="5" height="28" rx="1"/>';
+      g+='<text class="led-t" x="'+(a[0]+12)+'" y="178" text-anchor="middle" style="fill:var(--muted)">1000 µF</text>';
+      g+='<circle class="end" cx="'+a[0]+'" cy="'+a[1]+'" r="2.6" style="fill:#9b9b9b"/><circle class="end" cx="'+b[0]+'" cy="'+b[1]+'" r="2.6" style="fill:#9b9b9b"/>';
+      d=ld;
+    } else if(w.kind==='ribbon'){
+      g+='<path class="halo" d="'+d+'" style="stroke-width:20;stroke-linecap:butt;--hh:24"/><path class="core" d="'+d+'" style="stroke:'+w.c+';stroke-width:15;stroke-linecap:butt;--hw:17"/>';
+      g+='<path d="'+d+'" style="stroke:rgba(0,0,0,.18);stroke-width:15;stroke-dasharray:1 3;fill:none;stroke-linecap:butt"/>';
+    } else if(w.kind==='usb'){
+      g+='<path class="halo" d="'+d+'" style="stroke-width:12;--hh:15"/><path class="core" d="'+d+'" style="stroke:'+w.c+';stroke-width:7;--hw:9"/>';
+      g+=endMark(a,w.ends[0])+endMark(b,w.ends[1]);
+    } else if(w.kind==='cable'){
+      g+='<path class="halo" d="'+d+'" style="stroke-width:11;--hh:14"/><path class="core" d="'+d+'" style="stroke:'+w.c+';stroke-width:6.5;--hw:8.5"/>';
+      g+='<path d="'+d+'" style="stroke:'+w.dash+';stroke-width:2;stroke-dasharray:6 5;fill:none"/>';
+      g+='<circle class="end" cx="'+a[0]+'" cy="'+a[1]+'" r="3.5" style="fill:'+w.c+'"/><circle class="end" cx="'+b[0]+'" cy="'+b[1]+'" r="3.5" style="fill:'+w.c+'"/>';
+    } else if(w.kind==='air'){
+      g+='<path class="core" d="'+d+'" style="stroke:'+w.c+';stroke-width:2.5;stroke-dasharray:4 4;--hw:3.5"/>';
+    } else {
+      g+='<path class="halo" d="'+d+'" style="stroke-width:8"/><path class="core" d="'+d+'" style="stroke:'+w.c+';stroke-width:3.4"/>';
+      g+=endMark(a,w.ends[0],w.c)+endMark(b,w.ends[1],w.c);
+    }
+    g+='<path class="hit" d="'+d+'"/></g>';
+    return g;
+  }
+  var order = ['led','pi','pump','power5','power','step','relay','moist','light','touch'];
+  var ws = '<g id="wires">';
+  order.forEach(function(gk){ W.forEach(function(w){ if(w.g===gk) ws+=wireSVG(w); }); });
+  ws += '</g>';
+
+  var svg = document.getElementById('plan');
+  svg.innerHTML = s + ws;
+  var layer = document.getElementById('wires');
+
+  /* ---------- Interaktion ---------- */
+  var byId = {}; W.forEach(function(w){ byId[w.id]=w; });
+  var filter='all', hot=null, pinned=null;
+  var info=document.getElementById('info');
+  var gEls={}; Array.prototype.forEach.call(layer.querySelectorAll('.wire'),function(g){ gEls[g.dataset.id]=g; });
+
+  var chips=document.getElementById('chips');
+  GROUPS.forEach(function(gr){
+    var cnt = gr.k==='all' ? W.length : W.filter(function(w){return w.g===gr.k;}).length;
+    var b=document.createElement('button'); b.type='button'; b.className='chip';
+    b.setAttribute('aria-pressed', gr.k==='all'?'true':'false');
+    b.innerHTML=(gr.k==='all'?'':'<span class="dot" style="background:'+gr.c+'"></span>')+gr.name+' <span class="n">'+cnt+'</span>';
+    b.addEventListener('click',function(){ filter=gr.k; pinned=null; Array.prototype.forEach.call(chips.children,function(c){ c.setAttribute('aria-pressed', c===b?'true':'false'); }); update(); });
+    chips.appendChild(b);
+  });
+
+  var tbody=document.getElementById('rows'), rows=[], grpRows={};
+  GROUPS.slice(1).forEach(function(gr){
+    var tr=document.createElement('tr'); tr.className='grp'; tr.innerHTML='<th colspan="5"><span style="background:'+gr.c+'"></span>'+gr.name+'</th>';
+    tbody.appendChild(tr); grpRows[gr.k]=tr;
+    W.filter(function(w){return w.g===gr.k;}).forEach(function(w){
+      var r=document.createElement('tr'); r.className='row'; r.dataset.id=w.id;
+      var sw = (w.kind==='cable'||w.kind==='ribbon') ? (w.dash||w.c) : (w.kind==='res'||w.kind==='dio'||w.kind==='cap' ? '#9b9b9b' : w.c);
+      r.innerHTML='<td><button class="rowbtn" type="button"><i style="background:'+sw+'"></i>'+w.id+'</button></td><td>'+w.from+'</td><td>'+w.to+'</td><td class="cable">'+w.cable+'</td><td class="why">'+(w.why||'')+'</td>';
+      r.addEventListener('mouseenter',function(){ hot=w.id; update(); });
+      r.addEventListener('mouseleave',function(){ hot=null; update(); });
+      r.addEventListener('click',function(){ pinned = pinned===w.id ? null : w.id; update(); });
+      tbody.appendChild(r); rows.push(r);
+    });
+  });
+
+  Object.keys(gEls).forEach(function(id){
+    var g=gEls[id];
+    g.addEventListener('pointerenter',function(e){ if(e.pointerType==='mouse'){ hot=id; update(); } });
+    g.addEventListener('pointerleave',function(e){ if(e.pointerType==='mouse'){ hot=null; update(); } });
+    g.addEventListener('click',function(ev){ ev.stopPropagation(); pinned = pinned===id ? null : id; update(); });
+  });
+  svg.addEventListener('click',function(){ if(pinned){ pinned=null; update(); } });
+
+  function badgeColor(w){ if(w.kind==='cable') return w.dash; if(w.kind==='ribbon') return 'var(--wusb)'; if(w.kind==='res'||w.kind==='dio'||w.kind==='cap') return '#6b7076'; if(w.kind==='air') return 'var(--wusb)'; return w.c; }
+  function renderInfo(id){
+    if(!id){
+      var t = filter==='all' ? 'Fahr mit der Maus über ein Kabel oder tipp es an. Ein zweiter Tipp oder ein Tipp ins Leere löst die Auswahl wieder.' : GN[filter].hint;
+      info.innerHTML='<p class="info-hint">'+t+'</p>'; return;
+    }
+    var w=byId[id];
+    info.innerHTML='<div class="info-id" style="--c:'+badgeColor(w)+'">'+w.id+'</div><div class="info-main"><div class="info-route"><span>'+w.from+'</span><span class="arrow">→</span><span>'+w.to+'</span></div><div class="info-meta"><span>'+w.cable+'</span><span>'+(w.why||'')+'</span></div></div>';
+  }
+  function update(){
+    var act = hot || pinned;
+    Object.keys(gEls).forEach(function(id){
+      var w=byId[id], g=gEls[id], out = filter!=='all' && w.g!==filter;
+      g.classList.toggle('dim', out || (!!pinned && pinned!==id));
+      g.classList.toggle('hot', act===id);
+    });
+    if(act && gEls[act]) layer.appendChild(gEls[act]);
+    rows.forEach(function(r){ var w=byId[r.dataset.id]; r.hidden = filter!=='all' && w.g!==filter; r.classList.toggle('hot', act===w.id); r.setAttribute('aria-selected', pinned===w.id ? 'true':'false'); });
+    Object.keys(grpRows).forEach(function(k){ grpRows[k].hidden = filter!=='all' && filter!==k; });
+    renderInfo(act);
+  }
+
+  var stage=document.getElementById('stage'), zfit=document.getElementById('zfit'), zbig=document.getElementById('zbig');
+  function setZoom(big){ stage.classList.toggle('big',big); zfit.setAttribute('aria-pressed',big?'false':'true'); zbig.setAttribute('aria-pressed',big?'true':'false'); }
+  zfit.addEventListener('click',function(){ setZoom(false); });
+  zbig.addEventListener('click',function(){ setZoom(true); });
+
+  update();
+})();
+</script>
+
+</body></html>

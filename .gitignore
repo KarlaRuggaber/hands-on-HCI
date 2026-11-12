@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Spotify-Zugangsdaten und Laufzeitdaten
+.spotify_token
+*.env
+state.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Backups
+*.bak

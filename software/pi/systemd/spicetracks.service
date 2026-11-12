@@ -1,0 +1,14 @@
+# Spicetracks app. Install: cp spicetracks.service ~/.config/systemd/user/ && systemctl --user enable --now spicetracks
+[Unit]
+Description=Spicetracks
+After=librespot.service
+
+[Service]
+WorkingDirectory=%h/spicetracks-software/pi
+EnvironmentFile=%h/.config/spicetracks.env
+ExecStart=%h/spicetracks-software/pi/.venv/bin/python -m spicetracks
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,107 @@
+# Spicetracks settings. Everything you may want to change lives here.
+
+serial:
+  # stable name, see `ls /dev/serial/by-id/`; /dev/ttyUSB0 also works but can change
+  port: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+  baud: 115200
+
+plants:            # order = compartment 1..4 from the left
+  - name: Basilikum
+    color: [70, 170, 60]
+    led:                 # LED colours: dark = quiet, main, bright = loud (equalizer, touch flash)
+      dark: [0, 45, 8]
+      main: [0, 200, 35]
+      bright: [90, 255, 50]
+    touch_pin: 11     # ESP32 touch pin whose screw sits in this pot (11..14)
+    dry_raw: 0  # sensor value in dry air  (measure! see README, step 3)
+    wet_raw: 1000  # sensor value in a glass of water
+    water_below: 40   # % moisture: water when below. Basil likes it evenly moist
+    water_ms: 4000    # pump time per watering
+  - name: Oregano
+    color: [150, 160, 70]
+    led:                 # LED colours: dark = quiet, main, bright = loud (equalizer, touch flash)
+      dark: [35, 55, 0]
+      main: [120, 200, 0]
+      bright: [215, 255, 20]
+    touch_pin: 13     # still to check
+    dry_raw: 0
+    wet_raw: 1000
+    water_below: 25   # Mediterranean, prefers drying out between waterings
+    water_ms: 3000
+  - name: Currykraut
+    color: [215, 190, 90]
+    led:                 # LED colours: dark = quiet, main, bright = loud (equalizer, touch flash)
+      dark: [110, 50, 0]
+      main: [255, 150, 0]
+      bright: [255, 215, 40]
+    touch_pin: 14     # still to check
+    dry_raw: 0
+    wet_raw: 1000
+    water_below: 20   # silver leaves, very drought tolerant, hates wet feet
+    water_ms: 2500
+  - name: Zimtblätter
+    color: [190, 105, 60]
+    led:                 # LED colours: dark = quiet, main, bright = loud (equalizer, touch flash)
+      dark: [80, 10, 0]
+      main: [230, 45, 0]
+      bright: [255, 95, 25]
+    touch_pin: 12     # screw of the cinnamon pot is on GPIO 12 since the swap test
+    dry_raw: 0
+    wet_raw: 1000
+    water_below: 40   # tropical, evenly moist but never soggy
+    water_ms: 3500
+
+watering:
+  auto: true
+  min_gap_hours: 6        # never water the same plant twice within this time
+  quiet_hours: [22, 7]    # no automatic watering at night (pump noise)
+
+light:
+  ldr: false              # true once the light sensor (GPIO 6) is wired; until then the idle light is always on
+  dark_below: 1200        # LDR value: below = dark room, idle light allowed
+  idle_brightness: 0.35
+  music_brightness: 0.8
+  use_white_chip: false   # true: white part of a colour on the white chip (colours get paler)
+  max_ma: 1500            # current limit for all LEDs together
+  music_theme:            # music started from the phone, no plant chosen
+    dark: [60, 25, 5]
+    main: [255, 140, 50]
+    bright: [255, 200, 120]
+
+profiles:                 # one per person; the NFC sticker opens http://spicetracks.local:8080/p/<id>
+  thierry:
+    name: Thierry
+    playlists:            # one Spotify playlist (or album) per plant, same order as plants
+      - spotify:playlist:0VeNEc8sRU1tOeg5M3rFyz
+      - spotify:playlist:7hJ506wCr1jgcVnvq0ELxh
+      - spotify:playlist:2aqLbz7bIqQgHDafG502f5
+      - spotify:playlist:1eloVdWy8sutOP5iZBuHD0
+  gast:
+    name: Gast
+    playlists:
+      - spotify:playlist:0VeNEc8sRU1tOeg5M3rFyz
+      - spotify:playlist:7hJ506wCr1jgcVnvq0ELxh
+      - spotify:playlist:2aqLbz7bIqQgHDafG502f5
+      - spotify:playlist:1eloVdWy8sutOP5iZBuHD0
+default_profile: gast
+
+spotify:
+  device_name: Spicetracks   # name librespot announces (see README)
+  volume: 60
+  # Client ID and secret come from the environment, not from this file:
+  #   SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI=http://127.0.0.1:8888/callback
+
+eq:
+  source: "@DEFAULT_MONITOR@"   # what the speaker plays, read back from PipeWire
+  fps: 30
+  delay_ms: 180                 # Bluetooth speakers lag; LEDs wait this long so they stay in sync
+
+web:
+  port: 8080
+
+sensors:
+  moist_every_min: 10     # moisture sensors are switched on only for a short measurement (switched on, they disturb the touch)
+  after_water_s: 45       # and once more this long after every watering
+
+distributor:
+  steps: [515, 345, 170, 0]   # Position pro Pflanze, ab Pflanze 1

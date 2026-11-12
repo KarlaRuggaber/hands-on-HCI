@@ -1,0 +1,5 @@
+pyserial>=3.5
+spotipy>=2.24
+aiohttp>=3.9
+numpy>=1.24
+PyYAML>=6.0

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Spicetracks</title>
+<style>
+  /* Raspberry Pi Touch Display 2 in landscape: 1280 x 720, fingers, no mouse. Glass look: frosted panels over moving colour. */
+  :root { --ink:#fbf8f2; --soft:rgba(251,248,242,.74); --glow:#e8b04b;
+          --glass:rgba(255,255,255,.075); --edge:rgba(255,255,255,.22); --hi:rgba(255,255,255,.38); }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overscroll-behavior:none; }
+  body { margin:0; color:var(--ink); font:17px/1.3 system-ui, -apple-system, "SF Pro Display", "Segoe UI", sans-serif; user-select:none; -webkit-user-select:none;
+         touch-action:manipulation; overflow:hidden; background:#0d0b09; }
+  @media (pointer:coarse) { * { cursor:none !important; } }
+  button { font:inherit; color:inherit; border:0; background:none; padding:0; touch-action:manipulation; transition:transform .1s, filter .15s; }
+  button:active { transform:scale(.95); filter:brightness(1.3); }
+  svg { display:block; }
+
+  /* ---------- moving colour behind the glass ---------- */
+  .sky { position:fixed; inset:0; overflow:hidden; z-index:0; }
+  .blob { position:absolute; width:620px; height:620px; border-radius:50%; filter:blur(90px); opacity:.42; animation:drift 28s ease-in-out infinite alternate; }
+  .b1 { left:-160px; top:-200px; background:var(--glow); }
+  .b2 { left:430px; top:300px; background:var(--c1); animation-duration:34s; animation-delay:-8s; opacity:.26; }
+  .b3 { left:860px; top:-240px; background:var(--c2); animation-duration:31s; animation-delay:-15s; opacity:.24; }
+  .b4 { left:900px; top:380px; background:var(--c3); animation-duration:37s; animation-delay:-4s; opacity:.22; }
+  .cover-bg { position:absolute; inset:-80px; background-size:cover; background-position:center; filter:blur(70px) saturate(1.4); opacity:0; transition:opacity 1s; }
+  @keyframes drift { to { transform:translate(120px, 60px) scale(1.15); } }
+
+  /* ---------- glass ---------- */
+  .glass { position:relative; background:var(--glass); border-radius:30px;
+           -webkit-backdrop-filter:blur(26px) saturate(170%); backdrop-filter:blur(26px) saturate(170%);
+           box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 1px var(--edge), 0 20px 50px -20px rgba(0,0,0,.6); }
+  .glass::before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+                   background:linear-gradient(150deg, rgba(255,255,255,.20), rgba(255,255,255,0) 38%, rgba(255,255,255,0) 70%, rgba(255,255,255,.06)); }
+  .pillbtn { border-radius:999px; background:rgba(255,255,255,.12); box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 1px var(--edge); }
+
+  .app { position:relative; z-index:1; height:100%; display:grid; grid-template-columns:392px 1fr; gap:16px; padding:16px; }
+
+  /* ---------- player ---------- */
+  .player { display:flex; flex-direction:column; padding:18px; gap:12px; overflow:hidden; }
+  .brand { display:flex; align-items:center; justify-content:space-between; }
+  .brand b { font-size:20px; letter-spacing:.4px; }
+  .profiles { display:flex; gap:6px; }
+  .chip { min-height:44px; padding:0 16px; font-size:16px; }
+  .chip.on { background:rgba(255,255,255,.88); color:#16130f; font-weight:700; }
+  .cover { width:100%; max-width:296px; aspect-ratio:1; align-self:center; border-radius:22px; background:linear-gradient(140deg, var(--glow), #2a1e14);
+           background-size:cover; background-position:center; box-shadow:0 22px 44px -16px rgba(0,0,0,.75), inset 0 0 0 1px rgba(255,255,255,.18);
+           display:flex; align-items:center; justify-content:center; }
+  .cover svg { opacity:.6; }
+  .title { font-size:23px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .artist { font-size:17px; color:var(--soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  .from { font-size:14px; color:var(--soft); margin-top:3px; }
+  .prog { height:6px; border-radius:3px; background:rgba(255,255,255,.2); overflow:hidden; }
+  .prog i { display:block; height:100%; width:0; background:var(--ink); border-radius:3px; }
+  .times { display:flex; justify-content:space-between; font-size:13px; color:var(--soft); margin-top:5px; font-variant-numeric:tabular-nums; }
+  .controls { display:flex; align-items:center; justify-content:center; gap:22px; margin-top:auto; }
+  .ctl { width:66px; height:66px; display:flex; align-items:center; justify-content:center; }
+  .ctl.main { width:92px; height:92px; background:rgba(255,255,255,.92); color:#14110d; box-shadow:0 12px 30px -10px rgba(0,0,0,.8), inset 0 1px 0 #fff; }
+  .volume { display:flex; align-items:center; justify-content:center; gap:14px; }
+  .vbtn { width:50px; height:50px; display:flex; align-items:center; justify-content:center; }
+  .vbar { width:150px; height:6px; border-radius:3px; background:rgba(255,255,255,.2); overflow:hidden; }
+  .vbar i { display:block; height:100%; background:var(--ink); }
+
+  /* ---------- plants ---------- */
+  .plants { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:16px; min-height:0; }
+  .plant { padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; min-height:0; overflow:hidden; }
+  .plant .tint { position:absolute; inset:0; border-radius:inherit; background:radial-gradient(420px 260px at 0% 0%, color-mix(in srgb, var(--c) 34%, transparent), transparent 70%); pointer-events:none; }
+  .plant.playing { box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 2px var(--c), 0 0 40px -6px var(--c), 0 20px 50px -20px rgba(0,0,0,.6); }
+  .plant > * { position:relative; }
+  .head { display:flex; align-items:center; gap:12px; }
+  .ico { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex:none;
+         background:color-mix(in srgb, var(--c) 40%, rgba(255,255,255,.08)); box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 1px var(--edge); }
+  .head .n { font-size:23px; font-weight:800; }
+  .eqicon { display:none; gap:3px; align-items:flex-end; height:18px; }
+  .playing .eqicon { display:flex; }
+  .eqicon span { width:4px; background:var(--ink); border-radius:2px; animation:eq .9s ease-in-out infinite; }
+  .eqicon span:nth-child(2) { animation-delay:-.3s } .eqicon span:nth-child(3) { animation-delay:-.6s }
+  @keyframes eq { 0%,100% { height:5px } 50% { height:18px } }
+  .pill { margin-left:auto; font-size:14px; font-weight:700; padding:6px 13px; border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.4); }
+  .pill.dry { background:rgba(255,150,60,.9); color:#1f1206; } .pill.ok { background:rgba(120,220,120,.85); color:#0d1a0d; }
+  .pill.wet { background:rgba(110,180,255,.9); color:#07131f; } .pill.none { background:rgba(255,255,255,.14); }
+  .row { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .label { font-size:13px; color:var(--soft); }
+  .label.right { text-align:right; line-height:1.35; }
+  .pct { font-size:44px; font-weight:800; line-height:1; }
+  .pct small { font-size:21px; font-weight:700; margin-left:2px; }
+  .gauge { position:relative; height:14px; border-radius:7px; background:rgba(255,255,255,.12); box-shadow:inset 0 1px 2px rgba(0,0,0,.35); margin-top:2px; }
+  .gauge .fill { position:absolute; left:0; top:0; bottom:0; border-radius:7px; background:linear-gradient(90deg, color-mix(in srgb, var(--c) 70%, white), var(--c)); transition:width .6s; }
+  .gauge .mark { position:absolute; top:-5px; bottom:-5px; width:3px; border-radius:2px; background:var(--ink); box-shadow:0 0 6px rgba(0,0,0,.5); }
+  .marklbl { position:relative; height:16px; font-size:12px; color:var(--soft); }
+  .marklbl span { position:absolute; transform:translateX(-50%); white-space:nowrap; }
+  .acts { margin-top:auto; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .act { height:92px; border-radius:24px; display:flex; align-items:center; justify-content:center; gap:10px; font-size:21px; font-weight:800; }
+  .act.music { background:color-mix(in srgb, var(--c) 82%, white 6%); color:#14110d; box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 10px 26px -12px var(--c); }
+  .act.water { background:rgba(255,255,255,.12); box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 1px var(--edge); }
+  .act.water.armed { background:rgba(110,180,255,.92); color:#07131f; }
+  /* feature badges per plant: touch ready? moisture sensors measuring right now? */
+  .feat { display:flex; gap:8px; align-self:center; }
+  .fi { height:36px; padding:0 12px 0 9px; border-radius:999px; display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700;
+        background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px var(--edge); opacity:.38; transition:opacity .3s, background .3s; }
+  .fi.on { opacity:1; background:color-mix(in srgb, var(--c) 45%, rgba(255,255,255,.1)); box-shadow:inset 0 1px 0 var(--hi), inset 0 0 0 1px var(--edge); }
+  .fi.busy { opacity:1; background:rgba(110,180,255,.55); animation:sense 1.2s ease-in-out infinite; }
+  .fi.bad { opacity:1; background:rgba(255,120,80,.9); color:#1f0d06; }
+  @keyframes sense { 50% { box-shadow:inset 0 0 0 1px var(--edge), 0 0 16px rgba(110,180,255,.9); } }
+  .test { min-height:36px; border-radius:12px; border:1px dashed rgba(255,255,255,.3); font-size:13px; }
+
+  .moon { width:44px; height:44px; display:flex; align-items:center; justify-content:center; }
+  .nightcover { position:fixed; inset:0; z-index:100; background:#000; display:none; align-items:center; justify-content:center; }
+  .nightcover div { display:flex; flex-direction:column; align-items:center; gap:14px; color:rgba(255,255,255,.22); font-size:16px; animation:fade 4s forwards; }
+  @keyframes fade { 0%,60% { opacity:1 } 100% { opacity:0 } }
+  .status { position:fixed; z-index:2; right:24px; bottom:4px; font-size:12px; color:var(--soft); }
+  .warn { color:#ffb199; font-weight:700; }
+  @media (max-width:900px) { html:not(.kiosk) body { overflow:auto; } html:not(.kiosk) .app { grid-template-columns:1fr; height:auto; } html:not(.kiosk) .plants { grid-template-rows:none; } }
+</style></head>
+<body>
+<div class="sky"><div class="cover-bg" id="coverbg"></div><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+<div class="app">
+  <section class="player glass">
+    <div class="brand"><b>Spicetracks</b><div class="profiles"><span id="profiles" class="profiles"></span>
+      <button class="moon pillbtn" onclick="night()" aria-label="Nachtmodus"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg></button></div></div>
+    <div class="cover" id="cover"></div>
+    <div>
+      <div class="title" id="title">Tippe eine Pflanze an</div>
+      <div class="artist" id="artist">jede Pflanze hat ihre eigene Playlist</div>
+      <div class="from" id="from"></div>
+    </div>
+    <div><div class="prog"><i id="prog"></i></div><div class="times"><span id="t0">0:00</span><span id="t1">0:00</span></div></div>
+    <div class="controls">
+      <button class="ctl pillbtn" onclick="music('previous')" aria-label="Zurück"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg></button>
+      <button class="ctl main pillbtn" onclick="music('toggle')" id="toggle" aria-label="Play/Pause"></button>
+      <button class="ctl pillbtn" onclick="music('next')" aria-label="Weiter"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l10.5-7z"/></svg></button>
+    </div>
+    <div class="volume">
+      <button class="vbtn pillbtn" onclick="setVol(vol-10)" aria-label="Leiser"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h4l5-4v14l-5-4H4z"/></svg></button>
+      <div class="vbar"><i id="vbar"></i></div>
+      <button class="vbtn pillbtn" onclick="setVol(vol+10)" aria-label="Lauter"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+    </div>
+  </section>
+  <section class="plants" id="plants"></section>
+</div>
+<div class="status" id="status"></div>
+<div class="nightcover" id="nightcover"><div><svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>Gute Nacht. Antippen zum Aufwecken.</div></div>
+<script>
+const $ = s => document.querySelector(s);
+const post = u => fetch(u, {method:"POST"});
+const fake = new URLSearchParams(location.search).has("test");
+const ICON = {
+  play: '<svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause: '<svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+  note: '<svg width="96" height="96" viewBox="0 0 24 24" fill="#fff"><path d="M9 17.5a2.5 2.5 0 1 1-2-2.45V5l10-2v11.5a2.5 2.5 0 1 1-2-2.45V6.4L9 7.6z"/></svg>',
+  noteS: '<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M9 17.5a2.5 2.5 0 1 1-2-2.45V5l10-2v11.5a2.5 2.5 0 1 1-2-2.45V6.4L9 7.6z"/></svg>',
+  pauseS: '<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+  drop: '<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5S5 10.2 5 14.5a7 7 0 0 0 14 0C19 10.2 12 2.5 12 2.5z"/></svg>',
+  dropS: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5S5 10.2 5 14.5a7 7 0 0 0 14 0C19 10.2 12 2.5 12 2.5z"/></svg>',
+  hand: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V4.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v3.5A6.5 6.5 0 0 1 11.5 21h-.6a6 6 0 0 1-4.9-2.6l-2.4-3.6a1.5 1.5 0 0 1 2.4-1.8L9 15"/></svg>',
+};
+// touch state from the ESP32: badge style and word
+const TOUCH = { ok:["on", "Touch"], cal:["", "kalibriert"], pause:["", "Pause"], lock:["", "Pause"], stuck:["bad", "hängt"] };
+// plant icons, line drawings: basil, oregano, curry plant, cinnamon
+const S_ = 'fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"';
+const PLANT_ICONS = [
+  `<svg width="30" height="30" viewBox="0 0 32 32" ${S_}><path d="M16 29V13"/><path d="M16 17c-7 0-10-5-10-10 6 0 10 3 10 10z"/><path d="M16 15c7 0 10-5 10-10-6 0-10 3-10 10z"/><path d="M16 24c-4 0-6-2-7-5 4 0 6 2 7 5zM16 24c4 0 6-2 7-5-4 0-6 2-7 5z"/></svg>`,
+  `<svg width="30" height="30" viewBox="0 0 32 32" ${S_}><path d="M16 29V4"/><circle cx="12" cy="8" r="2.6"/><circle cx="20" cy="11" r="2.6"/><circle cx="11.5" cy="15" r="2.8"/><circle cx="20.5" cy="18" r="2.8"/><circle cx="12" cy="22" r="2.8"/><circle cx="20" cy="25" r="2.6"/></svg>`,
+  `<svg width="30" height="30" viewBox="0 0 32 32" ${S_}><path d="M16 29V6M16 29c-1-8-5-14-9-17M16 29c1-8 5-14 9-17M16 29c-2-6-6-9-11-10M16 29c2-6 6-9 11-10"/><circle cx="16" cy="5" r="1.6"/><circle cx="7" cy="11.5" r="1.4"/><circle cx="25" cy="11.5" r="1.4"/></svg>`,
+  `<svg width="30" height="30" viewBox="0 0 32 32" ${S_}><path d="M5 23l14-14M9 27l14-14"/><path d="M5 23a2.8 2.8 0 0 0 4 4M19 9a2.8 2.8 0 0 1 4 4"/><path d="M17 26c3-9 9-13 12-13-1 8-6 13-12 13z"/><path d="M17 26c3-4 6-7 9-9"/></svg>`,
+];
+let S = null, vol = 60, armed = null, armTimer = null;
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+const mmss = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+function ago(t) {
+  if (!t) return "noch nie gegossen";
+  const h = (Date.now() / 1000 - t) / 3600;
+  return "gegossen vor " + (h < 1 ? Math.max(1, Math.round(h * 60)) + " min" : h < 48 ? Math.round(h) + " h" : Math.round(h / 24) + " Tagen");
+}
+function measured(t) {
+  if (!t) return "";
+  const m = Math.round((Date.now() / 1000 - t) / 60);
+  return m < 1 ? " · gerade gemessen" : " · gemessen vor " + (m < 120 ? m + " min" : Math.round(m / 60) + " h");
+}
+function mood(pct, thr) {
+  if (pct == null) return ["none", "kein Messwert"];
+  if (pct < thr) return ["dry", "durstig"];
+  if (pct > 85) return ["wet", "sehr nass"];
+  return ["ok", "gut"];
+}
+function night() { $("#nightcover").style.display = "flex"; post("/api/night"); }
+// in night mode the black cover takes the first tap: it only wakes, it never presses a button below
+$("#nightcover").addEventListener("pointerdown", e => {
+  e.preventDefault(); e.stopPropagation();
+  $("#nightcover").style.display = "none"; post("/api/wake");
+});
+function music(what) { post("/api/music/" + what); }
+function water(i) {               // two taps, so a brushing finger does not flood a plant
+  if (armed === i) { post("/api/water/" + i); armed = null; clearTimeout(armTimer); render(S); return; }
+  armed = i; render(S); clearTimeout(armTimer);
+  armTimer = setTimeout(() => { armed = null; render(S); }, 3000);
+}
+function setVol(v) { vol = Math.max(0, Math.min(100, v)); $("#vbar").style.width = vol + "%"; post("/api/volume/" + vol); }
+
+function renderPlayer(s) {
+  const t = s.track, pp = s.playing_plant, rgb = i => `rgb(${s.colors[i].join(",")})`;
+  const root = document.documentElement.style;
+  root.setProperty("--glow", pp != null ? rgb(pp) : "#e8b04b");
+  root.setProperty("--c1", rgb(0)); root.setProperty("--c2", rgb(1)); root.setProperty("--c3", rgb(3));
+  $("#toggle").innerHTML = s.playing ? ICON.pause : ICON.play;
+  if (t) {
+    $("#title").textContent = t.track; $("#artist").textContent = t.artist || "";
+    $("#from").textContent = pp != null ? "aus der Playlist von " + s.plants[pp].name : (t.album || "");
+  }
+  const img = t && t.image;
+  $("#cover").style.backgroundImage = img ? `url("${img}")` : "";
+  $("#cover").innerHTML = img ? "" : ICON.note;
+  $("#coverbg").style.backgroundImage = img ? `url("${img}")` : "";
+  $("#coverbg").style.opacity = img && s.playing ? .55 : 0;
+  vol = s.volume ?? vol; $("#vbar").style.width = vol + "%";
+}
+
+function tick() {                 // progress bar runs on between the updates from the Pi
+  if (!S || !S.track) return;
+  const t = S.track, run = S.playing ? (Date.now() / 1000 - t.at) * 1000 : 0;
+  const p = Math.min(t.duration_ms || 0, (t.progress_ms || 0) + run);
+  $("#prog").style.width = t.duration_ms ? (100 * p / t.duration_ms) + "%" : "0";
+  $("#t0").textContent = mmss(p); $("#t1").textContent = mmss(t.duration_ms || 0);
+}
+setInterval(tick, 500);
+
+function render(s) {
+  if (window.onPlayerReset) window.onPlayerReset(s.player_reset);
+  S = s;
+  $("#nightcover").style.display = s.night ? "flex" : "none";
+  $("#profiles").innerHTML = Object.entries(s.profiles).map(([id, n]) =>
+    `<button class="chip pillbtn ${id === s.profile ? "on" : ""}" onclick="post('/api/profile/${id}')">${n}</button>`).join("");
+  renderPlayer(s);
+  $("#plants").innerHTML = s.plants.map((p, i) => {
+    const c = `rgb(${s.colors[i].join(",")})`, on = s.playing && s.playing_plant === i, thr = s.thresholds[i];
+    const [cls, word] = mood(p.pct, thr);
+    return `<article class="plant glass ${on ? "playing" : ""}" style="--c:${c}"><div class="tint"></div>
+      <div class="head"><div class="ico">${PLANT_ICONS[i % 4]}</div><span class="n">${p.name}</span>
+        <span class="eqicon"><span></span><span></span><span></span></span><span class="pill ${cls}">${word}</span></div>
+      <div class="row"><span class="label">Bodenfeuchte${measured(p.moist_at)}</span><span class="label">${ago(p.last_water)}</span></div>
+      <div class="row"><div class="pct">${p.pct == null ? "–" : p.pct}<small>${p.pct == null ? "" : "%"}</small></div>
+        <div class="feat">
+          <span class="fi ${(TOUCH[p.touch] || ["", "Touch"])[0]}">${ICON.hand}${(TOUCH[p.touch] || ["", "Touch"])[1]}</span>
+          <span class="fi ${p.sensing ? "busy" : ""}">${ICON.dropS}${p.sensing ? "misst" : "Feuchte"}</span>
+        </div></div>
+      <div class="gauge"><div class="fill" style="width:${p.pct || 0}%"></div><div class="mark" style="left:${thr}%"></div></div>
+      <div class="marklbl"><span style="left:${thr}%">giesst unter ${thr} %</span></div>
+      ${fake ? `<button class="test" onclick="post('/api/touch/${i}')">Blatt berühren (Test)</button>` : ""}
+      <div class="acts">
+        <button class="act music" onclick="post('/api/play/${i}')">${on ? ICON.pauseS : ICON.noteS}${on ? "Pause" : "Musik"}</button>
+        <button class="act water ${armed === i ? "armed" : ""}" onclick="water(${i})">${ICON.drop}${armed === i ? "Sicher?" : "Giessen"}</button>
+      </div>
+    </article>`;
+  }).join("");
+  $("#status").innerHTML = (s.esp_ok ? "" : '<span class="warn">ESP32 nicht verbunden</span> ') + (s.tank_ok ? "" : '<span class="warn">Tank leer</span>');
+  tick();
+}
+
+// on the Pi's own display: always the 1280 x 720 layout, scaled to the screen, whatever zoom or resolution Chromium has
+if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+  document.documentElement.classList.add("kiosk");
+  const app = document.querySelector(".app");
+  const fit = () => {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720);
+    Object.assign(app.style, { position: "absolute", width: "1280px", height: "720px", transformOrigin: "0 0",
+      transform: `scale(${s})`, left: `${(innerWidth - 1280 * s) / 2}px`, top: `${(innerHeight - 720 * s) / 2}px` });
+  };
+  addEventListener("resize", fit);
+  fit();
+}
+
+function connect() {
+  const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
+  ws.onmessage = e => render(JSON.parse(e.data));
+  ws.onclose = () => setTimeout(connect, 2000);
+}
+fetch("/api/state").then(r => r.json()).then(s => { render(s); connect(); });
+</script>
+<script>
+// Spotify plays inside this page (Web Playback SDK), only on the display of the Pi itself, not on phones.
+// The page becomes the Spotify Connect device "Spicetracks"; the sound goes to the Pi's speaker.
+if (["localhost", "127.0.0.1"].includes(location.hostname)) {
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const player = new Spotify.Player({
+      name: "Spicetracks",
+      volume: 0.8,
+      getOAuthToken: cb => fetch("/api/token").then(r => r.json()).then(j => cb(j.token)),
+    });
+    const report = (kind, msg) => fetch("/api/sdklog", {method:"POST", headers:{"Content-Type":"application/json"},
+                                                         body: JSON.stringify({kind, msg})});
+    player.addListener("ready", ({device_id}) => fetch("/api/device/" + device_id, {method:"POST"}));
+    player.addListener("not_ready", () => report("not_ready", "offline"));
+    for (const kind of ["initialization_error", "authentication_error", "account_error", "playback_error"])
+      player.addListener(kind, e => { console.error(kind, e.message); report(kind, e.message); });
+    // the Pi asks for a fresh connection when the player got stuck
+    let resetSeen;
+    window.onPlayerReset = n => {
+      if (resetSeen === undefined || n === resetSeen) { resetSeen = n; return; }
+      resetSeen = n;
+      player.disconnect();
+      setTimeout(() => player.connect(), 800);
+    };
+    // browsers only allow sound after a first tap: unlock it with the first touch on the screen
+    document.addEventListener("pointerdown", () => player.activateElement(), {once:true});
+    player.connect();
+    window.spotifyPlayer = player;
+  };
+  const sdk = document.createElement("script");
+  sdk.src = "https://sdk.scdn.co/spotify-player.js";
+  document.body.appendChild(sdk);
+}
+</script>
+</body></html>

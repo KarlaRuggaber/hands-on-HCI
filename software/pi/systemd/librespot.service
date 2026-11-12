@@ -1,0 +1,14 @@
+# Spotify Connect device "Spicetracks". User service, so the sound goes through PipeWire (Bluetooth or USB card).
+# Install: cp librespot.service ~/.config/systemd/user/ && systemctl --user enable --now librespot
+[Unit]
+Description=librespot (Spotify Connect)
+After=pipewire.service wireplumber.service
+
+[Service]
+ExecStart=/usr/bin/librespot --name Spicetracks --device-type speaker --backend alsa --device default \
+  --bitrate 160 --initial-volume 60 --enable-volume-normalisation --cache %h/.cache/librespot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
