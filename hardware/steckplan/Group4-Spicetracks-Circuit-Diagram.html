@@ -250,6 +250,7 @@ td.why{color:var(--muted)}
           <tr><td>Tank-Füllstand</td><td class="mono">GPIO 7</td><td>5. Feuchtesensor am Tank oder Schwimmer gegen GND</td></tr>
           <tr><td>Endschalter Verteiler</td><td class="mono">GPIO 39</td><td>INPUT_PULLUP, Schalter gegen GND</td></tr>
           <tr><td>Pegelwandler 74AHCT125</td><td class="mono">GPIO 40</td><td>nur falls die LEDs flackern, zwischen GPIO 40 und 330 Ω</td></tr>
+          <tr><td>Kamera</td><td class="mono">Pi · CSI</td><td>Nicht umgesetzt. Gedacht, um die Pflanzen auch von woanders zu beobachten und ihren Zustand zusätzlich zu beurteilen. Flachband 15-polig an die CSI-Buchse des Pi 4.</td></tr>
         </tbody>
       </table>
     </div>
@@ -419,8 +420,6 @@ td.why{color:var(--muted)}
     from:'Display · rotes Kabel',to:'Pi · Pin 2 (5 V)',cable:'Kabel vom Display',why:'Strom für das Display.'});
   add({id:'PI4',g:'pi',c:'var(--wgnd)',pts:P(100,500,'V',670,'H',58,'V',770,'H',104),ends:['c','f'],
     from:'Display · schwarzes Kabel',to:'Pi · Pin 6 (GND)',cable:'Kabel vom Display',why:'Masse für das Display.'});
-  add({id:'PI5',g:'pi',kind:'ribbon',c:'var(--wribbon)',pts:P(305,620,'V',730),
-    from:'Kamera · Flachband',to:'Pi 4 · CSI-Buchse (CAMERA)',cable:'15-polig, ca. 60 cm',why:'Der Pi 4 hat die breite 15-polige Buchse, ein Adapterkabel braucht ihr nicht.'});
   add({id:'PI6',g:'pi',kind:'usb',c:'var(--wusb)',pts:P(151,1005,'V',974),ends:['p','p'],
     from:'Netzteil 15 W (5,1 V, 3 A)',to:'Pi 4 · USB-C',cable:'USB-C',why:'Offizielles Pi-4-Netzteil. Versorgt Pi, Display und ESP32.'});
   add({id:'PI7',g:'pi',kind:'air',c:'var(--muted)',pts:P(305,974,'V',1005),
@@ -598,10 +597,9 @@ td.why{color:var(--muted)}
   el('<text class="zl" x="1520" y="1012" text-anchor="middle">Schrittmotor 28BYJ-48</text>');
 
   // Raspberry Pi
-  el('<text class="zl" x="60" y="380">Raspberry Pi 4 mit Display und Kamera</text>');
+  el('<text class="zl" x="60" y="380">Raspberry Pi 4 mit Display</text>');
   el('<rect class="disp" x="60" y="390" width="300" height="110" rx="8"/><rect class="screen" x="72" y="400" width="276" height="84" rx="3"/>');
   el('<text class="dev-t" x="210" y="440" text-anchor="middle">Touch Display 2</text><text class="dev-s" x="210" y="458" text-anchor="middle">7 Zoll</text>');
-  el('<rect class="cam" x="262" y="540" width="86" height="80" rx="6"/><circle class="lens" cx="305" cy="574" r="17"/><circle class="lens2" cx="305" cy="574" r="8"/><text class="dev-s" x="305" y="608" text-anchor="middle">Kamera</text>');
   el('<rect class="pi-pcb" x="90" y="730" width="250" height="240" rx="10"/>');
   el('<rect class="pi-hdr" x="97" y="741" width="26" height="224" rx="2"/>');
   for(var kk=0;kk<20;kk++){ var yy=748+11*kk; el('<rect class="pin" x="100.5" y="'+(yy-3.5)+'" width="7" height="7"/><rect class="pin" x="112.5" y="'+(yy-3.5)+'" width="7" height="7"/>'); }
