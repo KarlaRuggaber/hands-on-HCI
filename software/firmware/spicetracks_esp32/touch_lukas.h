@@ -42,6 +42,8 @@ const uint32_t MAX_TOUCH_MS = 15000;  // länger berührt ist unrealistisch: neu
 const uint32_t WATER_LOCK   = 60000;  // Sperre nach dem Giessen
 const int      STUCK_FRAMES = 20;     // 20 Fenster = 2 s ohne jede Änderung: Messung hängt
 const int      SETTLE_FRAMES = 3;     // nach einer Pause 0,3 s messen, aber nicht auswerten
+const float    SWITCH_RATIO = 1.5;    // eine andere Pflanze übernimmt erst, wenn sie 1,5-mal stärker ausschlägt
+volatile float touchSens = 1.5;       // Schwellen x diesen Faktor: höher = unempfindlicher (Pi: config.yaml touch.threshold_factor)
 
 struct Channel {
   int pin;
@@ -49,7 +51,7 @@ struct Channel {
   bool touched; int onCnt, offCnt;
   uint32_t since, calmSince;
   float mean, hum, delta;
-  float lastMean; bool flat, stuck; int stuckCnt;   // hängt die Messung?
+  float lastRaw; bool flat, stuck; int stuckCnt;    // hängt die Messung?
   bool calBad;                                       // hing während der Kalibrierung: Schwellen ungültig
 };
 Channel ch[NCH];
@@ -96,10 +98,14 @@ void measureWindow() {
     for (int s = 0; s < SAMPLES; s++) sum += buf[i][s];
     float m = sum / SAMPLES, dev = 0;
     for (int s = 0; s < SAMPLES; s++) dev += fabsf(buf[i][s] - m);
-    ch[i].lastMean = ch[i].mean;
     ch[i].mean = m;
     ch[i].hum  = dev / SAMPLES;
-    ch[i].flat = dev == 0 && m == ch[i].lastMean;   // ein ganzes Fenster ohne jede Änderung
+    // ein ganzes Fenster lang exakt derselbe Rohwert wie zuletzt: die Messung steht.
+    // Vergleich der Rohwerte selbst (ganze Zahlen), nicht des Mittelwerts: bei Werten um 1 Mio. rundet float.
+    bool same = buf[i][0] == ch[i].lastRaw;
+    for (int s = 1; s < SAMPLES && same; s++) same = buf[i][s] == buf[i][0];
+    ch[i].flat = same;
+    ch[i].lastRaw = buf[i][SAMPLES - 1];
     anyFlat |= ch[i].flat;
   }
   if (anyFlat) TOUCH_RESUME();                      // Messung abgebrochen: weiter mit dem nächsten Kanal
@@ -148,7 +154,31 @@ void calibrateAll() {
 
 void afterWatering() { lockUntil = millis() + WATER_LOCK; needRecal = true; }   // vom Pumpen-Code aufrufen
 
-void process(int i, uint32_t now) {
+// Wie weit liegt ein Kanal über seiner Schwelle? 1.0 = genau auf der Schwelle
+float ratioOf(int i) {
+  Channel &c = ch[i];
+  if (c.stuck || c.thrOn <= 0) return 0;
+  return (c.mean - c.base) / (c.thrOn * touchSens);
+}
+
+// Nur EINE Pflanze kann berührt sein: die mit dem stärksten Ausschlag über ihrer Schwelle.
+// Die schon berührte bleibt es, bis eine andere klar stärker ist (SWITCH_RATIO), damit es nicht hin und her springt.
+int pickWinner() {
+  int best = -1, cur = -1;
+  float bestR = 1.0f;                                  // muss mindestens die Schwelle erreichen
+  for (int i = 0; i < NCH; i++) {
+    float r = ratioOf(i);
+    if (r > bestR) { bestR = r; best = i; }
+    if (ch[i].touched) cur = i;
+  }
+  if (cur >= 0 && best >= 0 && best != cur) {
+    float rc = ratioOf(cur);
+    if (rc >= 0.5f && bestR < rc * SWITCH_RATIO) best = cur;
+  }
+  return best;
+}
+
+void process(int i, uint32_t now, int winner) {
   Channel &c = ch[i];
   // hängt der Kanal? Dann keine Berührungen auswerten, die anderen Kanäle laufen normal weiter
   c.stuckCnt = c.flat ? min(c.stuckCnt + 1, STUCK_FRAMES) : 0;
@@ -168,8 +198,9 @@ void process(int i, uint32_t now) {
   float delta = c.mean - c.base;
   c.delta = delta;
   bool humHigh = c.hum > c.humThr;
-  bool on  = delta > c.thrOn  || (USE_HUM && humHigh);
-  bool off = delta < c.thrOff && !(USE_HUM && humHigh);
+  float thrOn = c.thrOn * touchSens, thrOff = c.thrOff * touchSens;
+  bool on  = i == winner && (delta > thrOn || (USE_HUM && humHigh));
+  bool off = (delta < thrOff && !(USE_HUM && humHigh)) || (winner >= 0 && winner != i);   // eine andere Pflanze hat gewonnen
 
   // Zustand mit Entprellung und Hysterese
   if (!c.touched) {
@@ -182,13 +213,13 @@ void process(int i, uint32_t now) {
 
   // Ruhewert nachführen, die Schwellen bleiben fest
   if (!c.touched) {
-    if (delta < -c.thrOff)     c.base += (c.mean - c.base) * 0.3f;    // Ruhewert zu hoch: schnell runter
-    else if (delta < c.thrOff) c.base += (c.mean - c.base) * 0.01f;   // normal, ca. 10 s
+    if (delta < -thrOff)       c.base += (c.mean - c.base) * 0.3f;    // Ruhewert zu hoch: schnell runter
+    else if (delta < thrOff)   c.base += (c.mean - c.base) * 0.01f;   // normal, ca. 10 s
     else                       c.base += (c.mean - c.base) * 0.002f;  // Graubereich: langsam, nie festhängen
   }
 
   // Stufe: erhöht, aber ohne zusätzliches Brummen -> Umgebung, keine Hand
-  if (delta > c.thrOff && !humHigh) { if (!c.calmSince) c.calmSince = now; }
+  if (delta > thrOff && !humHigh) { if (!c.calmSince) c.calmSince = now; }
   else c.calmSince = 0;
   bool step  = c.calmSince && now - c.calmSince > STEP_MS;
   bool stuck = c.touched && now - c.since > MAX_TOUCH_MS;
@@ -229,7 +260,8 @@ void touchLoopLukas() {
   measureWindow();                                                   // dauert 100 ms
   if (settleLeft > 0) { settleLeft--; vTaskDelay(1); return; }       // nach der Pause erst einschwingen
   uint32_t now = millis();
-  for (int i = 0; i < NCH; i++) process(i, now);
+  int winner = pickWinner();
+  for (int i = 0; i < NCH; i++) process(i, now, winner);
 #ifdef RGB_BUILTIN
   bool any = false;
   for (int i = 0; i < NCH; i++) any |= ch[i].touched;

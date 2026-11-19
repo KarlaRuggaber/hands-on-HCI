@@ -109,6 +109,10 @@
   @keyframes fade { 0%,60% { opacity:1 } 100% { opacity:0 } }
   .status { position:fixed; z-index:2; right:24px; bottom:4px; font-size:12px; color:var(--soft); }
   .warn { color:#ffb199; font-weight:700; }
+  /* on the Pi itself: no blur and no moving colour clouds, they cost the Pi 4 a lot of graphics power (music stutters) */
+  html.lite .blob, html.lite .cover-bg { display:none; }
+  html.lite .glass { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(48,41,34,.92); }
+  html.lite body { background:radial-gradient(900px 600px at 15% 0%, #3a2a16, #0d0b09 70%); }
   @media (max-width:900px) { html:not(.kiosk) body { overflow:auto; } html:not(.kiosk) .app { grid-template-columns:1fr; height:auto; } html:not(.kiosk) .plants { grid-template-rows:none; } }
 </style></head>
 <body>
@@ -226,6 +230,7 @@ setInterval(tick, 500);
 
 function render(s) {
   if (window.onPlayerReset) window.onPlayerReset(s.player_reset);
+  if (window.onPlayerPause) window.onPlayerPause(s.player_pause);
   S = s;
   $("#nightcover").style.display = s.night ? "flex" : "none";
   $("#profiles").innerHTML = Object.entries(s.profiles).map(([id, n]) =>
@@ -258,7 +263,7 @@ function render(s) {
 
 // on the Pi's own display: always the 1280 x 720 layout, scaled to the screen, whatever zoom or resolution Chromium has
 if (["localhost", "127.0.0.1"].includes(location.hostname)) {
-  document.documentElement.classList.add("kiosk");
+  document.documentElement.classList.add("kiosk", "lite");
   const app = document.querySelector(".app");
   const fit = () => {
     const s = Math.min(innerWidth / 1280, innerHeight / 720);
@@ -299,6 +304,13 @@ if (["localhost", "127.0.0.1"].includes(location.hostname)) {
       resetSeen = n;
       player.disconnect();
       setTimeout(() => player.connect(), 800);
+    };
+    // another plant was touched: stop the old song here at once, the new one comes from Spotify a moment later
+    let pauseSeen;
+    window.onPlayerPause = n => {
+      if (pauseSeen === undefined || n === pauseSeen) { pauseSeen = n; return; }
+      pauseSeen = n;
+      player.pause();
     };
     // browsers only allow sound after a first tap: unlock it with the first touch on the screen
     document.addEventListener("pointerdown", () => player.activateElement(), {once:true});

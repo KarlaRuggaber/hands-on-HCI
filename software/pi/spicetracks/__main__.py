@@ -47,7 +47,7 @@ async def main(args):
 
     app = App(cfg, esp, sp, cfg_path=args.config)
     tasks = [app.esp_loop(), app.spotify_loop(), app.keepalive()]
-    if not args.no_eq:
+    if not args.no_eq and cfg["eq"].get("enabled", True):     # config.yaml eq.enabled: false saves CPU
         from .audio_eq import AudioEq
         eq = cfg["eq"]
         tasks.append(AudioEq(eq["source"], eq["fps"], eq["delay_ms"], on_frame=app.on_eq).run())

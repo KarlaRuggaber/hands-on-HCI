@@ -83,6 +83,9 @@ def main():
     steps = cfg.get("distributor", {}).get("steps")
     if steps:                                   # same distributor positions as the app
         send(ser, cmd="steps", pos=[int(x) for x in steps])
+    factor = cfg.get("touch", {}).get("threshold_factor")
+    if factor is not None:                      # same touch sensitivity as the app
+        send(ser, cmd="touchcfg", factor=float(factor))
     pins = [p.get("touch_pin") for p in cfg["plants"]]
     if all(isinstance(x, int) for x in pins):   # same touch pin per plant as the app
         send(ser, cmd="touchmap", pins=pins)

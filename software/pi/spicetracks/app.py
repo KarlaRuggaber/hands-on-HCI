@@ -4,12 +4,20 @@ import datetime as dt
 import json
 import logging
 import os
+import random
 import time
 
 log = logging.getLogger("app")
 
 STATE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "state.json")
-DOUBLE_TAP_S = 1.2            # Lukas' touch needs 0.2 s on + 0.3 s off, so a double tap takes about a second
+LONG_PRESS_MS = 1000          # playing plant: short tap = pause (right after letting go), hold 1 s or longer = next song
+# Demo mode (config.yaml sensors.demo: true): moisture values are made up instead of measured.
+# Start value per plant at random within a range typical for the plant, every watering adds 3 to 6 %.
+DEMO_RANGES = {"basil": (55, 70),     # likes it evenly moist
+               "oregano": (30, 45),   # Mediterranean, dries out between waterings
+               "curry": (24, 38),     # silver leaves, likes it dry
+               "zimt": (50, 65)}      # tropical, evenly moist
+SAME_PLANT_LOCK_S = 2.0       # right after a music command, the same plant is ignored (a bouncing touch would pause again)
 TOUCH_LOCK_S = 1.5            # one hand often triggers several plants at once: after a touch, other plants are ignored this long
 
 
@@ -35,13 +43,43 @@ class App:
         self._sent_state = {}
         self._touch_accept = (None, 0.0)
         self.player_reset = 0              # counted up: the display reconnects its Spotify player
+        self.player_pause = 0              # counted up: the player on the display stops the old song at once
+        self._cmd_at = 0.0                 # last music command: Spotify's state lags behind for a few seconds
         self._replay_plant = None          # play this again once the player is back
+        self._press = None                 # (plant, time): touch on the playing plant, its release decides pause or next
+        self._touch_lock = asyncio.Lock()  # touches run one after another, but no longer block reading the ESP32
+        self.demo = False
+        self._demo_setup()
         if hasattr(spotify, "on_stuck"):
             spotify.on_stuck = self._spotify_stuck
         self.night = False
         from .display import Backlight
         self.backlight = Backlight()
         self._load()
+
+    # ---------- demo moisture ----------
+    def _demo_setup(self):
+        """demo mode on: every plant gets a new, typical start value (again at every program start)."""
+        was = self.demo
+        self.demo = bool(self.cfg.get("sensors", {}).get("demo", False))
+        if not self.demo or was:
+            return
+        for i, p in enumerate(self.plants):
+            c = self.cfg["plants"][i]
+            lo, hi = c.get("demo_range") or next(
+                (r for k, r in DEMO_RANGES.items() if k in p["name"].lower()),
+                (c["water_below"] + 10, c["water_below"] + 25))
+            p["pct"] = random.randint(int(lo), int(hi))
+            p["raw"] = None
+            p["moist_at"] = time.time()
+        log.info("Demo-Feuchte: %s", ", ".join(f"{p['name']} {p['pct']} %" for p in self.plants))
+
+    def _demo_watered(self, i):
+        p = self.plants[i]
+        p["pct"] = min(100, (p["pct"] or 0) + random.randint(3, 6))
+        p["moist_at"] = time.time()
+        self.send_states()
+        self.push()
 
     # ---------- persistence ----------
     def _load(self):
@@ -69,7 +107,8 @@ class App:
                     playing=self.playing, playing_plant=self.playing_plant, track=self.track,
                     thresholds=[p["water_below"] for p in self.cfg["plants"]], volume=getattr(self.sp, "volume", 60),
                     tank_ok=self.tank_ok, esp_ok=self.esp_ok, dark=self.is_dark(), events=self.events,
-                    colors=[p["color"] for p in self.cfg["plants"]], night=self.night, player_reset=self.player_reset)
+                    colors=[p["color"] for p in self.cfg["plants"]], night=self.night, player_reset=self.player_reset,
+                    player_pause=self.player_pause)
 
     def push(self):
         snap = self.snapshot()
@@ -127,6 +166,9 @@ class App:
         if light.get("music_theme"):                      # music started from the phone, no plant chosen
             m = light["music_theme"]
             self.esp.send(cmd="theme", plant=4, dark=m["dark"], main=m["main"], bright=m["bright"])
+        factor = self.cfg.get("touch", {}).get("threshold_factor")
+        if factor is not None:                             # touch sensitivity: higher = less sensitive
+            self.esp.send(cmd="touchcfg", factor=float(factor))
         pins = [p.get("touch_pin") for p in self.cfg["plants"]]
         if all(isinstance(x, int) for x in pins):          # which touch screw belongs to which plant
             self.esp.send(cmd="touchmap", pins=pins)
@@ -163,6 +205,7 @@ class App:
             self.event(f"config.yaml nicht übernommen: {e}")
             return
         self.cfg = new
+        self._demo_setup()
         if self.profile not in new["profiles"]:
             self.profile = new["default_profile"]
         vol = new.get("spotify", {}).get("volume")
@@ -174,22 +217,49 @@ class App:
     # ---------- music ----------
     async def play_plant(self, i):
         uri = self.cfg["profiles"][self.profile]["playlists"][i]
+        self._cmd_at = time.time()
+        if self.playing and self.playing_plant is not None and self.playing_plant != i:
+            self.player_pause += 1                                 # display player: old song off right now
+        self.playing_plant, self.playing = i, True
         self.esp.send(cmd="bright", level=self.cfg["light"]["music_brightness"])
         self.esp.send(cmd="mode", mode="zone", plant=i)            # instant feedback, EQ takes over once sound runs
+        self.push()
         ok = await self.sp.play(uri)
         if ok:
-            self.playing_plant, self.playing = i, True
             self.event(f"{self.plants[i]['name']}: Musik an")
-            asyncio.create_task(self.refresh_track(1.2))
+            asyncio.create_task(self.refresh_track(1.5))
         else:
+            self.playing = False
             self.event("Spotify nicht erreichbar")
             self.light_rest()
 
     async def pause(self):
-        await self.sp.pause()
-        self.playing = False
-        self.event("Pause")
+        self._cmd_at = time.time()
+        self.playing = False                # light first, Spotify answers a moment later
         self.light_rest()
+        self.event("Pause")
+        await self.sp.pause()
+
+    async def next_song(self, i):
+        self._cmd_at = time.time()
+        await self.sp.next()
+        if not self.playing:
+            await self.sp.resume()
+            self.playing = True
+            self.esp.send(cmd="bright", level=self.cfg["light"]["music_brightness"])
+            self.esp.send(cmd="mode", mode="zone", plant=i)
+        self.event(f"{self.plants[i]['name']}: nächster Song")
+        asyncio.create_task(self.refresh_track())
+
+    async def on_release(self, i, ms):
+        """finger off the playing plant: short tap pauses, a long hold skips to the next song."""
+        if not self._press or self._press[0] != i or time.time() - self._press[1] > 20:
+            return
+        self._press = None
+        if ms >= LONG_PRESS_MS:
+            await self.next_song(i)
+        elif self.playing and self.playing_plant == i:
+            await self.pause()
 
     async def sleep(self):
         """night mode: music off, LEDs off, screen dark. A tap on the screen or a plant wakes everything."""
@@ -216,9 +286,22 @@ class App:
         if last_i is not None and last_i != i and now - last_t < TOUCH_LOCK_S:
             log.info("Touch %s ignoriert (kam mit %s)", name, self.plants[last_i]["name"])
             return
+        if i == self.playing_plant and now - self._cmd_at < SAME_PLANT_LOCK_S:
+            log.info("Touch %s ignoriert (Befehl erst vor %.1f s)", name, now - self._cmd_at)
+            return
         self._touch_accept = (i, now)
         log.info("Touch %s", name)
         await self.on_touch(i)
+
+    def _in_order(self, coro):
+        """run a touch reaction in the background, strictly one after another."""
+        async def run():
+            async with self._touch_lock:
+                try:
+                    await coro
+                except Exception:
+                    log.exception("Touch-Reaktion fehlgeschlagen")
+        asyncio.create_task(run())
 
     def _spotify_stuck(self, uri):
         """Spotify says ok, but the player on the display does not play: reconnect it, then play again."""
@@ -232,32 +315,22 @@ class App:
             await asyncio.sleep(1)
             await self.play_plant(i)
 
-    async def on_touch(self, i):
+    async def on_touch(self, i, screen=False):
         if self.night:
             self.wake()                      # a plant wakes the box, the touch then plays as usual
-        now = time.time()
-        last_i, last_t = self._last_touch
-        self._last_touch = (i, now)
-        # double tap on the playing plant: next song
-        if self._pending_pause and last_i == i and now - last_t < DOUBLE_TAP_S:
-            self._pending_pause.cancel()
-            self._pending_pause = None
-            await self.sp.next()
-            self.event(f"{self.plants[i]['name']}: nächster Song")
-            return
+        self._last_touch = (i, time.time())
         if self.playing and self.playing_plant == i:
-            # single tap on the playing plant: pause, but wait a moment for a possible second tap
-            async def later():
-                await asyncio.sleep(DOUBLE_TAP_S)
-                self._pending_pause = None
+            if screen:                       # button on the screen: pause right away
                 await self.pause()
-            self._pending_pause = asyncio.create_task(later())
+            else:                            # plant: the release decides (short = pause, long = next song)
+                self._press = (i, time.time())
         elif not self.playing and self.playing_plant == i:
-            await self.sp.resume()
-            self.playing = True
+            self._cmd_at = time.time()
+            self.playing = True              # light first, Spotify answers a moment later
             self.esp.send(cmd="bright", level=self.cfg["light"]["music_brightness"])
             self.esp.send(cmd="mode", mode="zone", plant=i)
             self.event(f"{self.plants[i]['name']}: weiter")
+            await self.sp.resume()
         else:
             await self.play_plant(i)                              # other plant: switch playlist
 
@@ -317,15 +390,17 @@ class App:
                 if not self.esp_ok:                         # ESP32 was already running (no restart on connect)
                     self.esp_ok = True
                     self.send_setup()
-                for i, raw in enumerate(msg.get("moist", [])[:4]):
-                    self.plants[i]["raw"] = raw                     # None until the first measurement
-                    self.plants[i]["pct"] = self.pct(i, raw)
+                if not self.demo:                                   # demo: keep the made-up values
+                    for i, raw in enumerate(msg.get("moist", [])[:4]):
+                        self.plants[i]["raw"] = raw                 # None until the first measurement
+                        self.plants[i]["pct"] = self.pct(i, raw)
                 age = msg.get("moistAge", -1)
                 tst = msg.get("tst") or []
                 for i, p in enumerate(self.plants):
-                    p["sensing"] = bool(msg.get("sense", False))
                     p["touch"] = tst[i] if i < len(tst) else None
-                    p["moist_at"] = time.time() - age if isinstance(age, (int, float)) and age >= 0 else None
+                    if not self.demo:
+                        p["sensing"] = bool(msg.get("sense", False))
+                        p["moist_at"] = time.time() - age if isinstance(age, (int, float)) and age >= 0 else None
                 self.send_states()
                 was_dark = self.is_dark()
                 self.light_raw = msg.get("light")
@@ -334,8 +409,10 @@ class App:
                     self.light_rest()
                 self.auto_water()
                 self.push()
-            elif t == "touch":
-                await self.on_plant_touch(int(msg["plant"]))
+            elif t == "touch":                              # Spotify may take seconds: keep reading the ESP32 meanwhile
+                self._in_order(self.on_plant_touch(int(msg["plant"])))
+            elif t == "release":
+                self._in_order(self.on_release(int(msg.get("plant", -1)), int(msg.get("ms", 0))))
             elif t == "watered":
                 i = int(msg["plant"])
                 if not 0 <= i < len(self.plants):        # pump test without a plant
@@ -343,6 +420,8 @@ class App:
                 self.plants[i]["last_water"] = time.time()
                 self._save()
                 self.event(f"{self.plants[i]['name']}: {msg.get('ms', 0) / 1000:.1f} s gegossen")
+                if self.demo:
+                    self._demo_watered(i)
             elif t in ("stuck", "unstuck"):
                 i = int(msg.get("plant", -1))
                 if 0 <= i < len(self.plants):
@@ -366,11 +445,17 @@ class App:
             st = await self.sp.state()
             if not st:
                 continue
+            if time.time() - self._cmd_at < 8:             # right after a command Spotify still reports the old state
+                self.set_track(st)
+                continue
             playing = st["playing"] and st.get("on_box", True)
             if playing != self.playing:
                 self.playing = playing
                 if not playing:
                     self.light_rest()
+                elif self.playing_plant is not None and not self.night:   # started from the phone: plant light again
+                    self.esp.send(cmd="bright", level=self.cfg["light"]["music_brightness"])
+                    self.esp.send(cmd="mode", mode="zone", plant=self.playing_plant)
             self.set_track(st)
 
     def set_track(self, st):
@@ -384,10 +469,12 @@ class App:
         await asyncio.sleep(wait)
         st = await self.sp.state()
         if st:
-            self.playing = st["playing"] and st.get("on_box", True)
+            if time.time() - self._cmd_at >= 8:            # otherwise our own command decides, Spotify lags behind
+                self.playing = st["playing"] and st.get("on_box", True)
             self.set_track(st)
 
     async def control(self, what):
+        self._cmd_at = time.time()
         if what == "toggle":
             if self.playing:
                 await self.pause()

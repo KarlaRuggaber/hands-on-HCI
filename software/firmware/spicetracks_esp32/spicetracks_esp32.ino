@@ -89,7 +89,7 @@ CRGB palAt(int p, float x) {
   return blend(PAL[p][1], PAL[p][2], (uint8_t)((x - 0.5f) * 2 * 255));
 }
 int activePlant = -1;
-uint8_t brightness = 150;                          // 0..255, set by the Pi
+uint8_t brightness = 255;                          // 0..255, set by the Pi (config.yaml light.*_brightness)
 uint8_t eqBands[8] = {0};
 uint32_t beatAt = 0;                               // last beat from the Pi, the roof flares up briefly
 uint32_t eqLastMs = 0;
@@ -376,10 +376,10 @@ float plantPos(int p) { return (PLANT_X[p] - PLANT_X[0]) / (PLANT_X[3] - PLANT_X
 
 CRGB stateColor(int p, uint32_t now) {
   switch (plantState[p]) {
-    case PS_OK:  return CRGB(30, 190, 50).nscale8_video(150);
-    case PS_DRY: return CRGB(255, 110, 0).nscale8_video(beatsin8(14, 40, 220, 0, p * 40));
-    case PS_WET: return CRGB(60, 130, 255).nscale8_video(140);
-    default:     return CRGB(255, 240, 220).nscale8_video(25);
+    case PS_OK:  return CRGB(30, 190, 50);                                          // full brightness
+    case PS_DRY: return CRGB(255, 110, 0).nscale8_video(beatsin8(14, 140, 255, 0, p * 40));   // pulses, peak 100 %
+    case PS_WET: return CRGB(60, 130, 255);
+    default:     return CRGB(255, 240, 220).nscale8_video(60);                      // no value yet: soft white
   }
 }
 
@@ -391,13 +391,13 @@ void skyAt(float h, float &pos, CRGB &col, float &width, uint8_t &ambient, CRGB 
     if (h < 8.5f)       col = blend(CRGB(255, 120, 60), CRGB(255, 200, 140), (uint8_t)((h - 6.0f) / 2.5f * 255));
     else if (h < 17.0f) col = CRGB(255, 214, 160);
     else                col = blend(CRGB(255, 200, 140), CRGB(255, 70, 20), (uint8_t)((h - 17.0f) / 3.5f * 255));
-    ambient = 28; ambCol = CRGB(255, 170, 90);
+    ambient = 70; ambCol = CRGB(255, 170, 90);
   } else {                                           // night: a small, cool moon
     float n = (h >= 20.5f ? h - 20.5f : h + 3.5f) / 9.5f;
     pos = n;
     width = 0.09f;
-    col = CRGB(90, 120, 200);
-    ambient = 8; ambCol = CRGB(40, 60, 140);
+    col = CRGB(115, 153, 255);
+    ambient = 25; ambCol = CRGB(40, 60, 140);
   }
 }
 
@@ -406,7 +406,7 @@ void renderRoofIdle(uint32_t now) {
   if (h >= 24) h -= 24;
   float pos, width; CRGB col, amb; uint8_t ambient;
   skyAt(h, pos, col, width, ambient, amb);
-  uint8_t breathe = beatsin8(5, 200, 255);           // the sun breathes very slightly
+  uint8_t breathe = 255;                             // sun at full brightness
   for (int i = 0; i < ROOF_LEDS; i++) {
     float d = (ledPos[i] - pos) / width;
     float g = expf(-d * d);
@@ -425,9 +425,7 @@ void renderEq(int p, uint32_t now) {
     int b0 = (int)d, b1 = min(b0 + 1, 7);
     float f = d - b0;
     float lvl = (eqBands[b0] * (1 - f) + eqBands[b1] * f) / 255.0f;
-    CRGB c = palAt(p, lvl + 0.35f * beat);
-    c.nscale8_video((uint8_t)(35 + 220 * max(lvl, 0.6f * beat)));
-    leds[i] = c;
+    leds[i] = palAt(p, 0.35f + 0.65f * lvl + 0.35f * beat);   // full brightness, louder = brighter theme colour
   }
 }
 
@@ -440,15 +438,13 @@ void renderRoofMusic(uint32_t now) {
     float c0 = plantPos(activePlant >= 0 ? activePlant : 0);
     for (int i = 0; i < ROOF_LEDS; i++) {
       float d = fabsf(ledPos[i] - c0);
-      leds[i] = base;
-      leds[i].nscale8_video(d < r ? (uint8_t)(255 - 180 * d / max(r, 0.01f)) : 0);
+      leds[i] = d < r ? base : CRGB();
     }
   } else if (mode == MODE_EQ) {
     renderEq(p, now);
   } else {                                            // waiting for sound: the theme colours drift slowly over the roof
     for (int i = 0; i < ROOF_LEDS; i++) {
-      leds[i] = palAt(p, 0.35f + 0.35f * sinf(now / 900.0f + ledPos[i] * 6.0f));
-      leds[i].nscale8_video(beatsin8(24, 90, 160));
+      leds[i] = palAt(p, 0.5f + 0.35f * sinf(now / 900.0f + ledPos[i] * 6.0f));   // full brightness
     }
   }
 }
@@ -461,7 +457,7 @@ void renderRoofShrink(uint32_t now) {                 // music stopped: light pu
     float d = fabsf(ledPos[i] - c0);
     float r = k * 1.1f;
     leds[i] = base;
-    leds[i].nscale8_video(d < r ? (uint8_t)(200 * k) : 0);
+    leds[i].nscale8_video(d < r ? (uint8_t)(255 * k) : 0);
   }
 }
 
@@ -472,14 +468,14 @@ void renderPots(uint32_t now, bool music) {
       CRGB c;
       if (pumpOn && pumpPlant == p) {                 // watering: drops running down
         int k = (now / 160 + POT_LEDS - j) % (POT_LEDS + 1);
-        c = (k == 0) ? CRGB(80, 170, 255) : CRGB(0, 25, 70);
-      } else if (music && p == activePlant) {         // playing plant: bass pulse
+        c = (k == 0) ? CRGB(80, 170, 255) : CRGB(0, 60, 160);
+      } else if (music && p == activePlant) {         // playing plant: always clearly lit in its colour, brighter with the bass
         uint8_t lvl = max(eqBands[0], eqBands[1]);
-        c = mode == MODE_EQ ? palAt(p, lvl / 255.0f) : PAL[p][1];
-        c.nscale8_video(mode == MODE_EQ ? 50 + lvl * 205 / 255 : beatsin8(24, 90, 200));
+        c = palAt(p, 0.5f + 0.5f * lvl / 255.0f);   // full brightness, the bass makes the colour brighter
+      } else if (music) {
+        c = CRGB();                                   // all other plants dark while music plays
       } else {
         c = stateColor(p, now);
-        if (music) c.nscale8_video(110);              // others step back while music plays
       }
       if (now < flashUntil[p]) {                      // greeting when the plant is touched
         uint8_t f = 255 * (flashUntil[p] - now) / FLASH_MS;
@@ -506,7 +502,7 @@ void renderLeds() {
     for (int p = 0; p < 4; p++)                       // touch greeting also lights the roof above the plant
       if (now < flashUntil[p] && !music)
         for (int i = 0; i < ROOF_LEDS; i++)
-          if (ledZone[i] == p) leds[i] += CRGB(PAL[p][1]).nscale8_video(200 * (flashUntil[p] - now) / FLASH_MS);
+          if (ledZone[i] == p) leds[i] += CRGB(PAL[p][1]).nscale8_video(255 * (flashUntil[p] - now) / FLASH_MS);
   }
   showLeds();
 }
@@ -610,6 +606,8 @@ void handleLine(const String &line) {
     send(r);
   } else if (!strcmp(cmd, "touchmon")) {                // {"cmd":"touchmon","s":60} live touch values for 60 s
     touchMonUntil = millis() + 1000UL * constrain((int)(d["s"] | 60), 0, 600);
+  } else if (!strcmp(cmd, "touchcfg")) {                // {"cmd":"touchcfg","factor":1.5} higher = less sensitive
+    if (d["factor"].is<float>()) touchSens = constrain((float)d["factor"], 0.5f, 10.0f);
   } else if (!strcmp(cmd, "touchmap")) {                // {"cmd":"touchmap","pins":[11,13,14,12]} touch pin per plant
     JsonArray a = d["pins"];
     if (a.size() == NCH) {
@@ -693,7 +691,7 @@ void sendTouchMon() {
   for (int i = 0; i < NCH; i++) {
     stk.add(ch[i].stuck ? 1 : 0);
     dl.add(roundf(ch[i].delta * 10) / 10);
-    th.add(roundf(ch[i].thrOn * 10) / 10);
+    th.add(roundf(ch[i].thrOn * touchSens * 10) / 10);   // effective threshold
     on.add(ch[i].touched ? 1 : 0);
     raw.add(roundf(ch[i].mean));
     pin.add(ch[i].pin);
@@ -726,7 +724,7 @@ void setup() {
   startTouch();                                         // calibrates 30 s in the background: don't touch the plants
   JsonDocument d;
   d["t"] = "hello";
-  d["fw"] = "spicetracks-2.10";
+  d["fw"] = "spicetracks-2.14";
   char core[16];
   snprintf(core, sizeof(core), "%d.%d.%d", ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH);
   d["core"] = core;                                     // Arduino-ESP32 version, decides which touch driver runs

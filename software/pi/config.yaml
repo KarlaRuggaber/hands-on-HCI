@@ -59,8 +59,8 @@ watering:
 light:
   ldr: false              # true once the light sensor (GPIO 6) is wired; until then the idle light is always on
   dark_below: 1200        # LDR value: below = dark room, idle light allowed
-  idle_brightness: 0.35
-  music_brightness: 0.8
+  idle_brightness: 1.0
+  music_brightness: 1.0
   use_white_chip: false   # true: white part of a colour on the white chip (colours get paler)
   max_ma: 1500            # current limit for all LEDs together
   music_theme:            # music started from the phone, no plant chosen
@@ -92,6 +92,7 @@ spotify:
   #   SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI=http://127.0.0.1:8888/callback
 
 eq:
+  enabled: false                # the capture only hears silence so far; off saves CPU on the Pi
   source: "@DEFAULT_MONITOR@"   # what the speaker plays, read back from PipeWire
   fps: 30
   delay_ms: 180                 # Bluetooth speakers lag; LEDs wait this long so they stay in sync
@@ -99,7 +100,11 @@ eq:
 web:
   port: 8080
 
+touch:
+  threshold_factor: 3   # touch sensitivity: thresholds x this factor. Higher = less sensitive (1.0 = as calibrated, try 1.5 to 3)
+
 sensors:
+  demo: true              # Demo: moisture values are made up (typical per plant, +3 to 6 % per watering), sensors are ignored
   moist_every_min: 10     # moisture sensors are switched on only for a short measurement (switched on, they disturb the touch)
   after_water_s: 45       # and once more this long after every watering
 

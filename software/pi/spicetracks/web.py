@@ -35,7 +35,7 @@ def make_app(app, fake_esp=None):
 
     @routes.post("/api/play/{i}")           # same as touching the plant
     async def play(req):
-        await app.on_touch(int(req.match_info["i"]))
+        await app.on_touch(int(req.match_info["i"]), screen=True)
         return web.json_response({"ok": True})
 
     @routes.post("/api/touch/{i}")          # only with --fake-esp: simulates a finger on the plant

@@ -59,7 +59,7 @@ class Spotify:
 
     async def device(self):
         """id of the librespot device; looked up again at most every 30 s."""
-        if self.device_id and time.time() - self._dev_checked < 30:
+        if self.device_id and time.time() - self._dev_checked < 300:
             return self.device_id
         res = await self._run(self.sp.devices)
         self._dev_checked = time.time()
@@ -79,15 +79,21 @@ class Spotify:
             kw = {"context_uri": uri} if ":track:" not in uri else {"uris": [uri]}
             try:
                 await self._run(self.sp.start_playback, device_id=dev, **kw)
-                await self._run(self.sp.shuffle, True, device_id=dev)
-                await self._run(self.sp.volume, self.volume, device_id=dev)
             except Exception as e:
                 log.error("play failed: %s", e)
                 self.device_id = None
                 return False
+        asyncio.create_task(self._after_play(dev))      # shuffle and volume afterwards: the music starts sooner
         self._cancel_verify()
         self._verify_task = asyncio.create_task(self._verify(uri, dev, kw))
         return True
+
+    async def _after_play(self, dev):
+        try:
+            await self._run(self.sp.shuffle, True, device_id=dev)
+            await self._run(self.sp.volume, self.volume, device_id=dev)
+        except Exception as e:
+            log.debug("shuffle/volume: %s", e)
 
     def _cancel_verify(self):
         if self._verify_task and not self._verify_task.done():
@@ -95,20 +101,25 @@ class Spotify:
         self._verify_task = None
 
     async def _verify(self, uri, dev, kw):
-        """Spotify answers 'ok' even when the player on the display is stuck. Check, try once more, then report."""
-        for attempt in (1, 2):
-            await asyncio.sleep(3)
+        """Spotify answers 'ok' even when the player on the display is stuck. Check, try once more, then report.
+        No transfer_playback any more: it restarted the OLD song for a few seconds before the new one came."""
+        resent = False
+        for attempt in (1, 2, 3):
+            await asyncio.sleep(4)
             try:
                 pb = await self._run(self.sp.current_playback)
             except Exception:
                 return
-            if pb and pb.get("is_playing") and (pb.get("context") or {}).get("uri", uri) == uri:
-                return
-            log.warning("Spotify spielt %s nicht (Prüfung %d)", uri, attempt)
-            if attempt == 1:
+            ctx = (pb.get("context") or {}).get("uri", uri) if pb else None
+            if ctx == uri and pb.get("is_playing"):
+                return                                   # right playlist and it plays
+            if ctx == uri:
+                continue                                 # right playlist, still loading: just wait
+            log.warning("Spotify spielt %s noch nicht (Prüfung %d)", uri, attempt)
+            if not resent:                               # wrong playlist: ask once more
+                resent = True
                 async with self._lock:
                     try:
-                        await self._run(self.sp.transfer_playback, dev, force_play=False)
                         await self._run(self.sp.start_playback, device_id=dev, **kw)
                     except Exception as e:
                         log.warning("zweiter Versuch: %s", e)
