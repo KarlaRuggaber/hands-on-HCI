@@ -291,7 +291,7 @@ Die Tabelle fasst alle Bauteile mit ihrer Aufgabe und ihrem Anschluss zusammen.
 \textbf{Bauteil} & \textbf{Aufgabe} & \textbf{Anschluss} \\
 \midrule
 ESP32-S3-DevKitC-1 & Sensoren lesen, Aktoren steuern & USB zum Pi \\
-Raspberry Pi mit Display & Logik, Spotify, Equalizer, Oberfläche & USB zum ESP32 \\
+Raspberry Pi 4 mit Display & Logik, Spotify, Equalizer, Oberfläche & USB zum ESP32 \\
 4 Edelstahlschrauben & Touch-Sensoren in den Töpfen & GPIO 11 bis 14 \\
 4 Feuchtesensoren & Bodenfeuchte & Plus (GPIO 10) und Masse (GPIO 9) schaltbar \\
 Lichtsensor KY-054 & Raumhelligkeit (noch nicht angeschlossen) & GPIO 6, 3,3\,V \\
@@ -399,9 +399,9 @@ Aus diesem Signal berechnet er 30 Mal pro Sekunde per FFT acht Frequenzbänder v
 
 Nur kam am Monitor in den Tests bisher nichts an ausser Stille. Deshalb ist der Equalizer in der aktuellen Version ausgeschaltet, was auf dem Pi auch Rechenleistung spart. Während der Musik zeigt das Licht dann einfach die Farben der spielenden Pflanze und reagiert nicht auf den Takt.
 
-Zwei weitere Dinge kamen erst nach dem Kurs dazu. Beim Wechsel zu einer anderen Pflanze lief anfangs noch kurz der alte Song weiter. Jetzt stoppt der Player auf dem Display den alten Song sofort, und das Licht wechselt schon, bevor Spotify antwortet. Ausserdem ruckelte die Musik, weil die Effekte der Oberfläche, also Unschärfe und bewegte Farbflächen, den Pi~4 stark belasteten. Auf dem Pi selbst läuft die Oberfläche deshalb in einer schlichteren Variante. Ganz weg ist das Stocken damit aber nicht (siehe Limitationen).
-
 Die Oberfläche auf dem Display ist eine Webseite, die vom Pi selbst kommt. Darauf sieht man die vier Pflanzen mit ihren Messwerten und den Player. Auch der NFC-Sticker führt auf diese Webseite. Auf ihm ist eine URL mit der ID eines Profils gespeichert. Hält jemand das Handy daran, öffnet sich die Seite, und der Pi wechselt auf dieses Profil.
+
+Zwei weitere Dinge kamen erst nach dem Kurs dazu. Beim Wechsel zu einer anderen Pflanze lief anfangs noch kurz der alte Song weiter. Jetzt stoppt der Player auf dem Display den alten Song sofort, und das Licht wechselt schon, bevor Spotify antwortet. Ausserdem ruckelte die Musik, weil die Effekte der Oberfläche, also Unschärfe und bewegte Farbflächen, den Pi~4 stark belasteten. Auf dem Pi selbst läuft die Oberfläche deshalb in einer schlichteren Variante. Ganz weg ist das Stocken damit aber nicht (siehe Limitationen).
 
 \begin{figure}[H]
 \centering
@@ -417,13 +417,13 @@ Wie die Hardware ist auch der Code auf zwei Programme verteilt. Die Firmware fü
 \begin{table}[H]
 \centering
 \small
-\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{8.4cm}L}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash\footnotesize}p{9.7cm}L}
 \toprule
 \textbf{Datei im Repository} & \textbf{Inhalt} \\
 \midrule
 \path{software/firmware/spicetracks_esp32/spicetracks_esp32.ino} & Firmware ESP32: Sensoren, Pumpe, Motor, LEDs, Protokoll \\
 \path{software/firmware/spicetracks_esp32/touch_lukas.h} & Touch-Erkennung Version 4 \\
-\path{software/pi/config.yaml} & Pflanzen, Farben, Grenzwerte, Profile, Playlists \\
+\path{software/pi/config.yaml} & Pflanzen, Farben, Grenzwerte, Profile, Playlists, Touch-Empfindlichkeit, Equalizer an oder aus, Demo-Modus der Feuchte \\
 \path{software/pi/spicetracks/app.py} & Logik: Touch, Musik, Giessen, Licht \\
 \path{software/pi/spicetracks/esp_link.py} & serielle Verbindung zum ESP32 \\
 \path{software/pi/spicetracks/spotify_ctl.py} & Spotify Web API \\
@@ -544,8 +544,6 @@ Die naheliegenden Erweiterungen folgen direkt aus diesen Limitationen. Für eini
   \item Eine Kamera am Pi, mit der man die Pflanzen auch von woanders sieht und die einen zusätzlichen Hinweis auf ihren Zustand gibt. Sie war von Anfang an geplant (Abbildung~\ref{fig:skizzen}), wurde aber nicht umgesetzt.
 \end{itemize}
 
-\offen{Weitere Ideen vom Team, z.\,B. mehr Pflanzen, andere Musikdienste, eine App.}
-
 % ---------------------------------------------------------------
 \section{Anhang}
 
@@ -589,7 +587,7 @@ Während der Entwicklung hat das Team Fragen und Probleme laufend mit dem KI-Ass
 
 \begin{itemize}[itemsep=2pt]
   \item Raspberry Pi Documentation: \url{https://www.raspberrypi.com/documentation/computers/getting-started.html}
-  \item Arduino Documentation: \url{https://docs.arduino.cc/}
+  \item Arduino Documentation: \url{https://docs.arduino.cc/}, für die Arduino IDE und die Programmierung des ESP32
   \item Dokumentation von Espressif zum ESP32-S3-DevKitC-1
   \item Bibliotheken Adafruit NeoPixel und ArduinoJson
   \item Spotify Web API und Spotify Web Playback SDK
