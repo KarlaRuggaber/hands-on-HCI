@@ -104,7 +104,7 @@ touch:
   threshold_factor: 3   # touch sensitivity: thresholds x this factor. Higher = less sensitive (1.0 = as calibrated, try 1.5 to 3)
 
 sensors:
-  demo: true              # Demo: moisture values are made up (typical per plant, +3 to 6 % per watering), sensors are ignored
+  demo: false             # Demo: moisture values are made up to showcase change
   moist_every_min: 10     # moisture sensors are switched on only for a short measurement (switched on, they disturb the touch)
   after_water_s: 45       # and once more this long after every watering
 
