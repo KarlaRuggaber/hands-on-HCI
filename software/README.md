@@ -27,7 +27,7 @@ LED-Streifen ◄── {"cmd":"mode",...} ◄───────────�
 | Mehrere Pflanzen gleichzeitig berührt | nur die Pflanze mit dem stärksten Ausschlag zählt |
 | Handy an den NFC-Sticker | Seite `/p/<profil>` öffnet sich, Profil wechselt, laufende Musik wechselt auf die Playlist dieser Person |
 | Feuchte unter Grenzwert | automatisch giessen, höchstens alle 6 h pro Pflanze, nicht nachts (22 bis 7 Uhr). Zurzeit mit simulierten Werten, siehe Demo-Modus. |
-| Keine Musik | Sonnenlauf im Dach, Zustand der Pflanzen am Trog. Der Lichtsensor ist noch nicht angeschlossen, das Ruhelicht ist deshalb immer an. |
+| Keine Musik | Sonnenlauf im Dach, Zustand der Pflanzen am Trog. |
 | Pi weg (Absturz, Neustart) | ESP32 fällt nach 30 s ins Ruhelicht zurück, Pumpe bleibt aus |
 
 ## Protokoll Pi ↔ ESP32
@@ -90,7 +90,7 @@ Equalizer: Spotify gibt keine Audio-Analyse mehr heraus, deshalb kann der Pi mit
 3. `firmware/spicetracks_esp32/spicetracks_esp32.ino` öffnen, hochladen.
 4. Serieller Monitor auf 115200: alle 2 s eine `status`-Zeile. Mit `{"cmd":"mode","mode":"zone","plant":1}` + Enter testen, ob Zone 2 leuchtet.
 
-Feuchte und Touch: Ein eingeschalteter Feuchtesensor im Topf stört die Touch-Messung so stark, dass sie abbricht. Darum schaltet die Firmware die vier Feuchtesensoren nur kurz ein: GPIO 10 liefert die 3,3 V (obere rote Schiene von Breadboard 1, ohne Brücke V3), GPIO 9 die Masse (obere blaue Schiene, ohne Brücke V4). Eingeschaltet wird alle 10 min und 45 s nach jedem Giessen für etwa 2 s, Touch pausiert in dieser Zeit. Der Lichtsensor ist noch nicht angeschlossen, er gehört an die untere, dauerhafte 3,3-V-Schiene. Hängt ein Touch-Kanal trotzdem, meldet die Firmware `stuck`, die anderen Pflanzen laufen weiter. Auf dem Bildschirm zeigt jede Pflanze zwei Symbole: Touch (an, kalibriert, Pause, hängt) und Feuchte (misst gerade oder aus).
+Feuchte und Touch: Ein eingeschalteter Feuchtesensor im Topf stört die Touch-Messung so stark, dass sie abbricht. Darum schaltet die Firmware die vier Feuchtesensoren nur kurz ein: GPIO 10 liefert die 3,3 V (obere rote Schiene von Breadboard 1, ohne Brücke V3), GPIO 9 die Masse (obere blaue Schiene, ohne Brücke V4). Eingeschaltet wird alle 10 min und 45 s nach jedem Giessen für etwa 2 s, Touch pausiert in dieser Zeit. Hängt ein Touch-Kanal trotzdem, meldet die Firmware `stuck`, die anderen Pflanzen laufen weiter. Auf dem Bildschirm zeigt jede Pflanze zwei Symbole: Touch (an, kalibriert, Pause, hängt) und Feuchte (misst gerade oder aus).
 
 Demo-Modus der Feuchte: Solange die Feuchtesensoren nicht kalibriert sind, steht in `config.yaml` `sensors.demo: true`. Dann rechnet der Pi mit erfundenen Werten: Jede Pflanze startet mit einem zufälligen, für sie typischen Wert, jedes Giessen erhöht ihn um 3 bis 6 %. Die echten Sensoren werden ignoriert. Nach dem Kalibrieren (siehe unten) auf `false` setzen.
 
@@ -150,9 +150,6 @@ echo 'SUBSYSTEM=="backlight", RUN+="/bin/chmod 666 /sys/class/backlight/%k/brigh
 sudo reboot
 ```
 
-### 5. NFC-Sticker
-Mit der App „NFC Tools“ eine URL schreiben: `http://<hostname>.local:8080/p/thierry` (Profil-ID aus `config.yaml`). Handy und Pi müssen im selben WLAN sein.
-
 ## Auf der Hardware testen
 
 Schritt für Schritt, jedes Teil einzeln. Erst wenn ein Schritt klappt, den nächsten.
@@ -195,7 +192,7 @@ pi/spicetracks/app.py          Logik: Touch, Musik, Giessen, Licht, Demo-Feuchte
 pi/spicetracks/esp_link.py     serielle Verbindung
 pi/spicetracks/spotify_ctl.py  Spotify Web API
 pi/spicetracks/audio_eq.py     Equalizer (FFT, Beat)
-pi/spicetracks/web.py          Web-Server und NFC-Seite
+pi/spicetracks/web.py          Web-Server
 pi/spicetracks/hwtest.py       Testmenü für die echte Hardware
 pi/deploy.sh, pi/flash.sh      Code und Firmware auf die Box bringen
 pi/web/index.html              Oberfläche auf dem Display
