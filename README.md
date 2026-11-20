@@ -25,7 +25,6 @@ Behind-the-scenes: [YouTube](https://youtu.be/qCuY9ZzWwgk)
 | `software/firmware/` | Firmware für den ESP32-S3 (Arduino/C++): Sensoren, Pumpe, Motor, LEDs, Touch-Erkennung |
 | `software/pi/` | Programm für den Raspberry Pi (Python): Logik, Spotify, Equalizer, Weboberfläche, NFC-Profile |
 | `software/README.md` | Ausführliche Anleitung zum Einrichten, Testen und Deployen |
-| `tests/` | Gesamttest der Hardware am Laptop, ohne Pi |
 | `hardware/steckplan/` | Steckplan mit Kabelliste als HTML (interaktiv) und PDF |
 | `hardware/laser/` | Schnittdateien für den Lasercutter (SVG) und Laserplan |
 | `hardware/3d-druck/` | Druckdateien für Ast, Stämme, Füsse und Triebe (STL, 3MF) und Druckplan |
