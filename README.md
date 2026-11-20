@@ -22,15 +22,18 @@ Behind-the-scenes: [YouTube](https://youtu.be/qCuY9ZzWwgk)
 
 | Ordner | Inhalt |
 | --- | --- |
+| `docs/abbildungen/` | Abbildungen aus dem Projektbericht |
+| `docs/bericht/` | Gesamtbericht über das Projekt |
+| `docs/fotos/` | Fotos aus dem Entstehungsprozess |
+| `docs/skizzen/` | Skizzen und Entwürfe aus der Ideenphase |
+| `hardware/3d-druck/` | Druckdateien für Ast, Stämme, Füsse und Triebe (STL, 3MF) und Druckplan |
+| `hardware/laser/` | Schnittdateien für den Lasercutter (SVG) und Laserplan |
+| `hardware/steckplan/` | Steckplan mit Kabelliste als HTML (interaktiv) und PDF |
 | `software/firmware/` | Firmware für den ESP32-S3 (Arduino/C++): Sensoren, Pumpe, Motor, LEDs, Touch-Erkennung |
 | `software/pi/` | Programm für den Raspberry Pi (Python): Logik, Spotify, Equalizer, Weboberfläche, NFC-Profile |
 | `software/README.md` | Ausführliche Anleitung zum Einrichten, Testen und Deployen |
-| `hardware/steckplan/` | Steckplan mit Kabelliste als HTML (interaktiv) und PDF |
-| `hardware/laser/` | Schnittdateien für den Lasercutter (SVG) und Laserplan |
-| `hardware/3d-druck/` | Druckdateien für Ast, Stämme, Füsse und Triebe (STL, 3MF) und Druckplan |
-| `docs/skizzen/` | Skizzen und Entwürfe aus der Ideenphase |
-| `docs/abbildungen/` | Abbildungen aus dem Projektbericht |
-| `docs/fotos/` | Fotos aus dem Entstehungsprozess |
+
+
 
 ## Nachbau in Kürze
 
