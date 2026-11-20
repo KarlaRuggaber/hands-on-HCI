@@ -92,7 +92,6 @@ spotify:
   #   SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI=http://127.0.0.1:8888/callback
 
 eq:
-  enabled: false                # the capture only hears silence so far; off saves CPU on the Pi
   source: "@DEFAULT_MONITOR@"   # what the speaker plays, read back from PipeWire
   fps: 30
   delay_ms: 180                 # Bluetooth speakers lag; LEDs wait this long so they stay in sync
