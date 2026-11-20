@@ -14,7 +14,9 @@ Thierry Suhner, Lukas Kapferer, Phil Solenthaler, Karla Ruggaber
 
 ## Video
 
-Video: _Link folgt_
+Produktvideo: [YouTube](https://youtu.be/8oCQXXJ95Fs) 
+
+Behind-the-scenes: [YouTube](https://youtu.be/qCuY9ZzWwgk)
 
 ## Inhalt
 
