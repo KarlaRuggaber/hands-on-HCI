@@ -57,7 +57,7 @@ watering:
   quiet_hours: [22, 7]    # no automatic watering at night (pump noise)
 
 light:
-  ldr: false              # true once the light sensor (GPIO 6) is wired; until then the idle light is always on
+  ldr: true               # true when the light sensor should be enabled
   dark_below: 1200        # LDR value: below = dark room, idle light allowed
   idle_brightness: 1.0
   music_brightness: 1.0
