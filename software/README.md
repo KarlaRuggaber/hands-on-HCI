@@ -26,7 +26,7 @@ LED-Streifen ◄── {"cmd":"mode",...} ◄───────────�
 | Andere Pflanze antippen | Wechsel zu deren Playlist, der alte Song stoppt sofort |
 | Mehrere Pflanzen gleichzeitig berührt | nur die Pflanze mit dem stärksten Ausschlag zählt |
 | Handy an den NFC-Sticker | Seite `/p/<profil>` öffnet sich, Profil wechselt, laufende Musik wechselt auf die Playlist dieser Person |
-| Feuchte unter Grenzwert | automatisch giessen, höchstens alle 6 h pro Pflanze, nicht nachts (22 bis 7 Uhr). Zurzeit mit simulierten Werten, siehe Demo-Modus. |
+| Feuchte unter Grenzwert | automatisch giessen, höchstens alle 6 h pro Pflanze, nicht nachts (22 bis 7 Uhr). |
 | Keine Musik | Sonnenlauf im Dach, Zustand der Pflanzen am Trog. |
 | Pi weg (Absturz, Neustart) | ESP32 fällt nach 30 s ins Ruhelicht zurück, Pumpe bleibt aus |
 
