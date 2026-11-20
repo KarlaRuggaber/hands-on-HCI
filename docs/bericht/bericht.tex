@@ -84,7 +84,7 @@ Thierry Suhner & Software, Pläne für 3D-Druck und Lasercutter \\
 \end{tabularx}
 \end{table}
 
-Code, Steckplan sowie die Laser- und 3D-Druckdateien liegen im GitHub-Repository \url{https://github.com/KarlaRuggaber/hands-on-HCI}.
+Code, Steckplan sowie die Laser- und 3D-Druckdateien liegen im GitHub-Repository \url{https://github.com/KarlaRuggaber/hands-on-HCI}. Wie die Box in Aktion aussieht, zeigt unser Produktvideo (\url{https://youtu.be/8oCQXXJ95Fs}), und wie sie entstanden ist, ein Video hinter den Kulissen (\url{https://youtu.be/qCuY9ZzWwgk}).
 
 
 % ---------------------------------------------------------------
@@ -101,6 +101,12 @@ Spicetracks ist für alle gedacht, die gerne kochen und Musik hören. Wer frisch
 Dazu kommt, dass viele beim Kochen nebenbei Musik hören. Mit Spicetracks tippt man dafür einfach eine Pflanze an, und die passende Playlist läuft. Das Handy muss man dafür nicht in die Hand nehmen.
 
 Ob jemand die Box allein nutzt oder sie mit anderen teilt, etwa in einer WG oder Familie, spielt für das Konzept keine Rolle.
+
+\subsection{Warum man die Pflanzen berührt}
+
+Beim Kochen hat man selten saubere, freie Hände. Sie sind nass, voller Mehl oder Öl, und das Handy liegt irgendwo ausser Reichweite. Um die Musik zu wechseln, müsste man es entsperren, eine App öffnen und durch Playlists scrollen, mit Fingern, die man gerade nicht auf einen Bildschirm legen möchte. Die Kräuter stehen dagegen ohnehin griffbereit auf der Arbeitsfläche, und beim Kochen greift man sowieso immer wieder zu ihnen. Ein kurzer Tipp auf ein Blatt reicht, egal wie die Hände gerade aussehen. Man muss nichts entsperren, nicht genau zielen und kaum hinschauen.
+
+Wir sehen darin aber mehr als einen bequemeren Schalter. Wer die Pflanzen für die Musik berührt, hat sie öfter in der Hand und merkt dabei nebenbei, wie es ihnen geht: ob die Erde trocken ist, ob Blätter gelb werden oder ob es Zeit zum Ernten ist. Basilikum und Oregano duften, wenn man ihre Blätter streift, die Bedienung riecht also nach Küche. Und weil jede Pflanze ihre eigene Playlist hat, bekommt sie so etwas wie einen eigenen Charakter. Man wählt nicht „Playlist~3“, sondern entscheidet sich für einen Currykraut-Abend. Genau diese Verbindung zwischen Pflanze und Musik war uns wichtiger als die schnellstmögliche Bedienung.
 
 \subsection{Ideenfindung}
 
@@ -125,6 +131,8 @@ Die wichtigste Entscheidung beim Interaktionsdesign war, dass man keine App öff
 
 Ohne Knöpfe braucht es eine andere Rückmeldung, und dafür ist das Licht da. Tippt man eine Pflanze an, blitzt ihre Farbe kurz im Trog auf, und wenn gerade keine Musik läuft, auch im Ast darüber. Man weiss also sofort, dass die Berührung angekommen ist. Während Musik läuft, leuchtet nur die Pflanze, die gerade spielt, hell in ihrer Farbe, die anderen Tröge bleiben dunkel. Ohne Musik zeigt das Licht, wie es den Pflanzen geht: ruhiges Grün heisst alles in Ordnung, oranges Pulsieren heisst Durst. Das sieht man auch im Vorbeigehen, ohne aufs Display zu schauen. Wenn eine Pflanze durstig ist, bedeutet dies, dass der Tank vermutlich leer ist.
 
+Dass man dieses Licht versteht, ohne dass es jemand erklärt, hat drei Gründe. Erstens erscheint es genau dort, wo man hingefasst hat. Der Trog der berührten Pflanze blitzt auf, und das Licht im Ast breitet sich von genau dieser Stelle aus. Ursache und Wirkung liegen also direkt beieinander. Zweitens kommt die Rückmeldung sofort, noch bevor die Musik läuft. Spotify braucht nach jedem Befehl einen Moment, und ohne das Licht wüsste man in dieser Pause nicht, ob die Berührung angekommen ist. Viele würden dann nochmals tippen und die gerade startende Musik gleich wieder pausieren. Drittens hat jede Pflanze überall dieselbe Farbe, auf dem Display, am Topf und im Ast. Wer einmal gesehen hat, dass das Basilikum grün und die Zimtblätter rotbraun leuchten, erkennt die Zuordnung überall wieder. Für den Zustand der Pflanzen nutzen wir Signale, die man aus dem Alltag kennt: Ruhiges Grün heisst alles in Ordnung, und ein oranges Pulsieren zieht wie ein Warnlicht die Aufmerksamkeit auf sich, ohne zu stören.
+
 Um die Pflege muss man sich bewusst nicht kümmern. Die Box misst regelmässig die Feuchte und giesst selbst, nachts aber nicht, weil man die Pumpe hört. Für die Grundfunktionen braucht man das Display nicht, dafür reichen die Pflanzen. Wer mehr wissen will, findet dort aber alle Details, und bedienen lässt sich die Box darüber auch.
 
 Auf dem Display in der Front (Abbildung~\ref{fig:prototyp}, rechts) ist links der Player. Dort sieht man das Cover des aktuellen Songs, Titel und Interpret und aus welcher Pflanzen-Playlist er stammt. Darunter folgen der Fortschrittsbalken, Tasten für Zurück, Play/Pause und Weiter und die Lautstärke. Oben steht ein Mond-Knopf für den Nachtmodus mit welchem man jegliche LEDs, die Soundeffekte und das Display deaktivieren kann. Durch einmaliges Berühren des Displays deaktiviert man den Nachtmodus wieder.
@@ -132,6 +140,18 @@ Auf dem Display in der Front (Abbildung~\ref{fig:prototyp}, rechts) ist links de
 Rechts hat jede Pflanze eine eigene Kachel in ihrer Farbe. Darauf stehen die Bodenfeuchte in Prozent, ein Wort für den Zustand (gut, durstig oder sehr nass) und wann zuletzt gemessen und gegossen wurde. Ein Balken zeigt die Feuchte, eine Markierung darauf den Grenzwert, unter dem gegossen wird. Zwei kleine Symbole zeigen, ob die Touch-Erkennung der Pflanze bereit ist oder zum Beispiel noch kalibriert, und ob der Feuchtesensor gerade misst. Mit den zwei Knöpfen unten auf jeder Kachel startet man die Musik dieser Pflanze oder giesst sie von Hand. Fürs Giessen muss man zweimal tippen, beim ersten Mal fragt der Knopf „Sicher?“. So setzt ein versehentlicher Fingertipp keine Pflanze unter Wasser.
 
 Im Nachtmodus wird der Bildschirm schwarz. Der erste Tipp darauf weckt die Box nur und löst keinen Knopf darunter aus. Verliert der Pi die Verbindung zum ESP32, erscheint unten auf dem Bildschirm eine Warnung.
+
+\subsubsection*{Was diese Bedienung kostet}
+
+Pflanzen als Tasten haben auch Nachteile. Einige davon haben wir abgeschwächt, andere bewusst in Kauf genommen.
+
+Der grösste ist, dass man die Bedienung erst entdecken muss. Einem Knopf sieht man an, dass man ihn drücken kann, einer Pflanze nicht. Wer die Box zum ersten Mal sieht, kommt kaum von selbst auf die Idee, ein Basilikumblatt anzutippen, und dass ein zweiter Tipp pausiert, muss man ausprobieren. Im Moment helfen dabei vor allem das Display, auf dem jede Pflanze mit ihrer Farbe und einem Musik-Knopf erscheint, und eine kurze Erklärung beim ersten Benutzen. Ein kleiner Hinweis an der Box selbst wäre eine naheliegende Verbesserung.
+
+Der zweite Nachteil ist, dass man die Musik auch auslösen kann, ohne es zu wollen. Beim Kochen fasst man die Kräuter ja nicht nur für die Musik an, sondern vor allem, um sie zu ernten. Wer ein paar Blätter Basilikum abzupft, startet dabei unter Umständen dessen Playlist oder pausiert sie. Ganz verhindern lässt sich das nicht, denn für den Sensor ist ein Griff zum Ernten dasselbe wie ein Tipp. Wir haben es aber deutlich seltener gemacht. Eine Berührung zählt erst, wenn sie 0,2\,s dauert, die Schwellen sind so hoch, dass eine Hand in der Nähe der Pflanze nichts auslöst, und wer eine Pflanze anfasst, löst nur diese aus und nicht auch die Nachbarn. Passiert es doch, ist der Schaden klein: Ein zweiter Tipp pausiert die Musik wieder. Ausserdem reagiert die Box auf jede Hand, auch auf die von Kindern oder Gästen, die einfach neugierig an den Pflanzen zupfen.
+
+Drittens kann die Bedienung über die Pflanzen nur wenig. Starten, pausieren und zu einer anderen Pflanze wechseln geht. Für die Lautstärke oder einen bestimmten Song braucht man weiterhin das Display. Das ist Absicht, denn jede weitere Geste wäre noch schwerer zu entdecken und noch leichter aus Versehen auszulösen. Die Pflanzen übernehmen deshalb nur das, was man beim Kochen am häufigsten braucht.
+
+Mit Knöpfen wäre die Box eindeutiger zu bedienen, sie wäre dann aber im Grunde ein Lautsprecher mit Kräutern daneben. Gerade dass man die Pflanzen selbst anfasst, macht sie zum Teil des Erlebnisses. Dafür nehmen wir diese Nachteile in Kauf.
 
 % ---------------------------------------------------------------
 \section{Der Prototyp}
@@ -500,8 +520,6 @@ Auch das Drucken half beim Ausprobieren. Beim Verteiler zeigte das gelbe Testtei
 
 In der Software hat sich bewährt, dass sie auch ohne Hardware läuft. Mit dem simulierten ESP32 und dem Testmenü liessen sich Software und Elektronik getrennt prüfen. Und weil das Programm die \path{config.yaml} laufend neu einliest, waren Farben, Grenzwerte und die Touch-Empfindlichkeit schnell nachjustiert, ohne dass etwas neu starten musste.
 
-Viel Zeit gespart hat der KI-Assistent Claude. Standen wir bei einem Problem an, fand er meistens schnell die passende Dokumentation, und bei der Fehlersuche half er, Ursachen einzugrenzen, etwa bei der Störung zwischen Feuchtesensoren und Touch. Seine Vorschläge mussten wir aber immer am echten Prototyp prüfen, und nicht jeder hat auf Anhieb gestimmt.
-
 \subsection{Erkenntnisse}
 
 Unterschätzt haben wir dagegen den Zusammenbau, also alles ins Gehäuse zu bringen und dann zu prüfen, ob es zusammen noch funktioniert. Einzeln liefen die Module meistens schnell. Sobald sie zusammenkamen, gab es neue Probleme, die vorher auf dem Tisch nicht aufgetaucht waren, etwa die fehlende gemeinsame Masse, die Stromversorgung der LEDs oder die Störung zwischen Feuchtesensoren und Touch. Beim nächsten Projekt würden wir für diese Phase von Anfang an deutlich mehr Zeit einplanen.
@@ -551,7 +569,7 @@ Die naheliegenden Erweiterungen folgen direkt aus diesen Limitationen. Für eini
 \toprule
 \textbf{Teil} & \textbf{Ort im Repository} \\
 \midrule
-Video & Nicht im Repository, da zu gross für GitHub; separat verlinkt \\
+Videos & Nicht im Repository, da zu gross für GitHub. Produktvideo: \url{https://youtu.be/8oCQXXJ95Fs}, Behind the Scenes: \url{https://youtu.be/qCuY9ZzWwgk} \\
 Code & \path{software/}: Firmware und Pi-Programm, mit README zum Einrichten und Testen; \path{tests/}: Testsketch für den ESP32 \\
 Steckplan & \path{hardware/steckplan/}: \path{Group4-Spicetracks-Circuit-Diagram.html} und \path{.pdf}, mit Kabelliste \\
 Lasercutter-Dateien & \path{hardware/laser/}: SVG-Dateien und Laserplan als PDF \\
@@ -579,9 +597,7 @@ Die genauen Schritte stehen im README unter \path{software/README.md}.
 
 Grundlage für das Projekt waren die Kursfolien von Hands-on HCI (Universität St.\,Gallen, Herbstsemester 2026, Katerina Koleva, Leon Reicherts und Gianluca Ielpo).
 
-Während der Entwicklung haben wir Fragen und Probleme laufend mit dem KI-Assistenten Claude (Anthropic) besprochen. Claude hat passend zur jeweiligen Frage Websites und Dokumentationen herausgesucht, bei der Fehlersuche geholfen und Code geschrieben oder überarbeitet, unter anderem Teile der Firmware (etwa die Touch-Erkennung und die Steuerung der Feuchtesensoren) und des Pi-Programms. Auch der interaktive Steckplan ist mit Claude entstanden. Wir haben alle Vorschläge am Prototyp getestet, angepasst und verantworten sie.
-
-\offen{Bitte prüfen, ob dieser Absatz den tatsächlichen Einsatz von Claude im ganzen Team richtig beschreibt, und ihn an die Vorgaben der HSG zur Deklaration von KI-Hilfsmitteln anpassen.}
+Während des ganzen Projekts haben wir den KI-Assistenten Claude (Anthropic) als Hilfsmittel eingesetzt, und zwar für viele verschiedene Aufgaben: beim Recherchieren von Dokumentationen und Datenblättern, bei der Fehlersuche an Hard- und Software, beim Schreiben und Überarbeiten von Code für die Firmware und das Programm auf dem Pi, beim Erstellen des interaktiven Steckplans und beim sprachlichen Überarbeiten dieses Berichts. Die Idee für Spicetracks, das Konzept und alle Gestaltungsentscheidungen stammen von uns. Wenn Claude technische Lösungswege vorgeschlagen hat, haben wir entschieden, welche wir umsetzen. Alle Ergebnisse haben wir selbst geprüft, am Prototyp getestet und wo nötig angepasst. Für den Prototyp und den Inhalt dieses Berichts tragen wir die Verantwortung.
 
 Die wichtigsten Dokumentationen waren:
 
@@ -594,8 +610,5 @@ Die wichtigsten Dokumentationen waren:
   \item Spotify for Developers, Änderungen an der Web API vom 27.~November 2024 (Audioanalyse): \url{https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api}
   \item Spotify for Developers, Update on Developer Access and Platform Security vom 6.~Februar 2026 (Premium-Pflicht, fünf Nutzer:innen): \url{https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security}
 \end{itemize}
-
-% Eigenständigkeitserklärung: folgt vor der Abgabe (offizieller HSG-Wortlaut).
-\offen{Eigenständigkeitserklärung im offiziellen HSG-Wortlaut einfügen.}
 
 \end{document}
