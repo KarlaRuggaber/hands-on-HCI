@@ -2,6 +2,8 @@
 
 Eine Kräuterbox mit vier Pflanzen, die gleichzeitig Musik abspielt. Entstanden ist sie als Projekt von Gruppe 4 im Kurs "Hands-on HCI: Entwicklung von Software- und Hardware-Prototypen" an der Universität St. Gallen im Herbstsemester 2026.
 
+[Gesamtreport](docs/bericht/bericht.pdf)
+
 ![Spicetracks](docs/abbildungen/prototyp.jpg)
 
 Berührt man eines der Kräuter, startet die Spotify-Playlist dieser Pflanze. Über den Töpfen hängt ein 3D-gedruckter Ast mit LEDs. Läuft Musik, zeigt er sie als Equalizer an, ist es still, zeigt er, wie es den Pflanzen geht. Die Box misst ausserdem die Feuchte in jedem Topf und giesst selbst: Eine einzige Pumpe versorgt alle vier Pflanzen, ein schwenkbarer Arm bringt das Wasser zum richtigen Topf.
