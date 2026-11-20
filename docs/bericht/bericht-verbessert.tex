@@ -125,7 +125,7 @@ Die wichtigste Entscheidung beim Interaktionsdesign war, dass man keine App öff
 
 Ohne Knöpfe braucht es eine andere Rückmeldung, und dafür ist das Licht da. Tippt man eine Pflanze an, blitzt ihre Farbe kurz im Trog auf, und wenn gerade keine Musik läuft, auch im Ast darüber. Man weiss also sofort, dass die Berührung angekommen ist. Während Musik läuft, leuchtet nur die Pflanze, die gerade spielt, hell in ihrer Farbe, die anderen Tröge bleiben dunkel. Ohne Musik zeigt das Licht, wie es den Pflanzen geht: ruhiges Grün heisst alles in Ordnung, oranges Pulsieren heisst Durst. Das sieht man auch im Vorbeigehen, ohne aufs Display zu schauen. Wenn eine Pflanze durstig ist, bedeutet dies, dass der Tank vermutlich leer ist.
 
-Um die Pflege muss man sich bewusst nicht kümmern. Die Box misst regelmässig die Feuchte und giesst selbst, nachts aber nicht, weil man die Pumpe hört. Für die Grundfunktionen braucht man das Display nicht, dafür reichen die Pflanzen und das Handy. Wer mehr wissen will, findet dort aber alle Details, und bedienen lässt sich die Box darüber auch.
+Um die Pflege muss man sich bewusst nicht kümmern. Die Box misst regelmässig die Feuchte und giesst selbst, nachts aber nicht, weil man die Pumpe hört. Für die Grundfunktionen braucht man das Display nicht, dafür reichen die Pflanzen. Wer mehr wissen will, findet dort aber alle Details, und bedienen lässt sich die Box darüber auch.
 
 Auf dem Display in der Front (Abbildung~\ref{fig:prototyp}, rechts) ist links der Player. Dort sieht man das Cover des aktuellen Songs, Titel und Interpret und aus welcher Pflanzen-Playlist er stammt. Darunter folgen der Fortschrittsbalken, Tasten für Zurück, Play/Pause und Weiter und die Lautstärke. Oben steht ein Mond-Knopf für den Nachtmodus mit welchem man jegliche LEDs, die Soundeffekte und das Display deaktivieren kann. Durch einmaliges Berühren des Displays deaktiviert man den Nachtmodus wieder.
 
@@ -150,7 +150,7 @@ Das fertige Produkt reagiert auf folgende Dinge:
 \toprule
 \textbf{Aktion} & \textbf{Reaktion} \\
 \midrule
-Pflanze antippen & Die Playlist dieser Pflanze für das aktive Profil startet. Ihr Trog leuchtet in ihrer Farbe, im Ast breitet sich das Licht von dieser Pflanze aus. \\
+Pflanze antippen & Die Playlist dieser Pflanze startet. Ihr Trog leuchtet in ihrer Farbe, im Ast breitet sich das Licht von dieser Pflanze aus. \\
 Spielende Pflanze kurz antippen & Pause, danach Ruhelicht \\
 Pausierte Pflanze antippen & Musik läuft weiter \\
 Andere Pflanze antippen & Wechsel zu deren Playlist \\
@@ -164,7 +164,7 @@ Mond-Knopf auf dem Display & Nachtmodus: Musik pausiert, LEDs aus, Display schwa
 
 Über das Licht gibt die Box die meisten Rückmeldungen. Es sind insgesamt 40 LEDs, 28 im Ast und je drei innen am Trog jeder Pflanze.
 
-Solange keine Musik läuft, wandert über den Tag eine weiche Sonne von links nach rechts über den Ast. Morgens ist sie rötlich, mittags warmweiss und abends orange, nachts bleibt nur ein schwacher blauer Mond. Die LEDs am Trog zeigen in der Zeit, wie es der jeweiligen Pflanze geht. Grün heisst gut versorgt, oranges Pulsieren heisst Durst, Blau heisst sehr nasse Erde. Schwaches Weiss bedeutet, dass es noch keinen Messwert gibt.
+Solange keine Musik läuft, wandert über den Tag eine weiche Sonne von links nach rechts über den Ast. Morgens ist sie rötlich, mittags warmweiss und abends orange, nachts bleibt nur ein schwacher blauer Mond. Die LEDs am Trog zeigen in der Zeit, wie es der jeweiligen Pflanze geht. Grün heisst gut versorgt, oranges Pulsieren heisst Durst, Blau heisst sehr nasse Erde. Schwaches Weiss bedeutet, dass es noch keinen Messwert gibt. Ein Lichtsensor oben am Ast misst ausserdem die Raumhelligkeit, und die Box passt das Ruhelicht daran an.
 
 Startet die Musik, breitet sich das Licht von der Stelle über der angetippten Pflanze nach beiden Seiten aus. Ihr Trog leuchtet hell und pulsiert mit dem Bass, die Tröge der anderen Pflanzen sind aus. Bei Pause zieht sich das Licht wieder in die Pflanze zurück. Auch beim Giessen sieht man etwas: Solange eine Pflanze Wasser bekommt, laufen blaue Tropfen über ihre LEDs.
 
@@ -208,7 +208,7 @@ Dienstag & Ideen eingegrenzt, Pitch von Spicetracks mit Feedback, Start am Proto
 Mittwoch & Hacking Day: Module einzeln aufbauen und testen \\
 Donnerstag & Hacking Day und Zwischenstand, bei der Demo macht die Touch-Erkennung noch Probleme \\
 Freitag & Störung zwischen Feuchtesensoren und Touch gefunden, Lösung eingebaut, finale Demo \\
-Danach & Störung zwischen Feuchtesensoren und Touch endgültig gelöst (GPIO 9 und 10), Software überarbeitet (Firmware 2.14): Touch-Erkennung, Bedienung und Licht verbessert \\
+Danach & Software überarbeitet (Firmware 2.14): Touch-Erkennung, Bedienung und Licht verbessert \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -253,14 +253,12 @@ Die Arbeit ist auf zwei Geräte verteilt, und jedes macht das, was es besser kan
   \draw[both] (pi.east) -- node[above, font=\scriptsize, text=black!65]{USB} node[below, font=\scriptsize, text=black!65]{JSON} (esp.west);
 
   % Links: was am Pi hängt
-  \node[box] (disp) at (-4.4, 3.15) {\textbf{Display}\\\footnotesize Oberfläche im Browser};
-  \node[box] (spot) at (-4.4, 1.05) {\textbf{Spotify}\\\footnotesize Web API, Playback SDK};
-  \node[box] (spk)  at (-4.4,-1.05) {\textbf{Lautsprecher}\\\footnotesize per Bluetooth};
-  \node[box] (nfc)  at (-4.4,-3.15) {\textbf{Handy mit NFC}\\\footnotesize öffnet die Profilseite};
+  \node[box] (disp) at (-4.4, 2.1) {\textbf{Display}\\\footnotesize Oberfläche im Browser};
+  \node[box] (spot) at (-4.4, 0) {\textbf{Spotify}\\\footnotesize Web API, Playback SDK};
+  \node[box] (spk)  at (-4.4,-2.1) {\textbf{Lautsprecher}\\\footnotesize per Bluetooth};
   \draw[both] (disp.east) -- (disp.east -| pi.west);
   \draw[both] (spot.east) -- (spot.east -| pi.west);
   \draw[arr]  (spk.east -| pi.west) -- (spk.east);
-  \draw[arr]  (nfc.east) -- (nfc.east -| pi.west);
 
   % Rechts: was am ESP32 hängt
   \node[box] (touch) at (8.8, 3.5)  {\textbf{Touch}\\\footnotesize Schrauben in den Töpfen};
@@ -291,7 +289,7 @@ Die Tabelle fasst alle Bauteile mit ihrer Aufgabe und ihrem Anschluss zusammen.
 ESP32-S3-DevKitC-1 & Sensoren lesen, Aktoren steuern & USB zum Pi \\
 Raspberry Pi 4 mit Display & Logik, Spotify, Equalizer, Oberfläche & USB zum ESP32 \\
 4 Edelstahlschrauben & Touch-Sensoren in den Töpfen & GPIO 11 bis 14 \\
-4 Feuchtesensoren & Bodenfeuchte & Plus (GPIO 10) und Masse (GPIO 9) schaltbar \\
+4 Feuchtesensoren & Bodenfeuchte & GPIO 1, 2, 4 und 5, 3,3\,V \\
 Lichtsensor KY-054 & Raumhelligkeit & GPIO 6, 3,3\,V \\
 Relais und Pumpe & Wasser aus dem Tank fördern & Relais an GPIO 21 \\
 Schrittmotor mit ULN2003-Treiber & Arm mit Schlauch zur richtigen Pflanze schwenken & GPIO 15 bis 18 \\
@@ -299,7 +297,6 @@ LED-Streifen SK6812 RGBW, 40 LEDs & Ast und Tröge beleuchten & GPIO 40 über 33
 ELEGOO Power MB V2 & 5\,V für Relais, Motor, Pumpe & Breadboard 2 \\
 Powerbank Intenso B10000 & Strom für die LEDs & LED-Streifen \\
 Bluetooth-Lautsprecher & Musik & Bluetooth zum Pi \\
-NFC-Sticker & Profil wechseln & URL zur Profilseite auf dem Pi \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -328,6 +325,8 @@ Vier Pumpen hätten mehr Platz, mehr Strom und mehr Anschlüsse gebraucht, also 
 Für den Verteiler, über den das Wasser vom Arm in die Töpfe läuft, brauchte es mehrere Drucke, bis die Form stimmte. Das erste, gelbe Teil war ein gerades Stück mit vier Anschlüssen. Gedruckt wurde es vor allem, um zu testen, ob sich die Schläuche sauber anstecken lassen, ohne dass daneben Wasser herausläuft. Am Arm sah man dann aber auch, dass er sich im Halbkreis bewegt und an den beiden Enden am geraden Verteiler vorbeiläuft. Das zweite, schwarze Teil ist deshalb gebogen und folgt genau dem Weg des Arms. Es hat pro Pflanze eine Vertiefung, an der der Arm anhält und das Wasser abgibt.
 
 Beim Giessen arbeiten Pi und ESP32 zusammen. Der Pi entscheidet anhand der Feuchtewerte, wann eine Pflanze Wasser braucht. Dabei giesst er jede Pflanze höchstens alle 6\,h und nie zwischen 22 und 7 Uhr. Dann schickt er dem ESP32 einen Befehl mit der Pflanze und der Pumpzeit. Der ESP32 fährt den Arm an die richtige Stelle, schaltet die Pumpe über das Relais ein und meldet danach, wie lange er gepumpt hat.
+
+Im normalen Betrieb arbeitet die Box mit den echten Messwerten der Feuchtesensoren. Für Vorführungen gibt es zusätzlich einen Demo-Modus. Echte Erde trocknet nur langsam aus, und in einer Präsentation würde man kaum sehen, dass sich etwas tut. Im Demo-Modus startet deshalb jede Pflanze mit einem für sie typischen Feuchtewert, und jedes Giessen erhöht ihn sichtbar um 3 bis 6\,\%. So sieht man auch in wenigen Minuten, wie die Box auf das Giessen reagiert.
 
 \begin{figure}[H]
 \centering
@@ -374,9 +373,9 @@ Das hat fast zu gut funktioniert. Die erste Version reagierte auch auf das Brumm
 
 Sie misst jeden Kanal 100 Mal im Abstand von 1\,ms und nimmt den Mittelwert über diese 100\,ms. Das sind genau fünf Perioden des 50-Hz-Stromnetzes, so mittelt sich das Brummen heraus. Nach dem Start kalibriert sich die Erkennung 30\,s lang und misst, wie stark der Wert ohne Berührung schwankt. Die Schwelle liegt beim Sechsfachen dieses Rauschens. Als Berührung zählt es erst, wenn der Wert 0,2\,s lang über der Schwelle bleibt, damit kurze Ausreisser nichts auslösen.
 
-Ein zweites Problem tauchte erst auf, als die Module zusammen liefen. Steckte ein Feuchtesensor im selben Topf, reagierte die Pflanze nicht mehr auf Berührungen. Schlimmer noch: Der Touch-Chip hielt dann die Messung für alle vier Pflanzen an. Beim Messen lädt der Chip die Schraube kurz auf und misst, wie lange das dauert. Der Feuchtesensor liegt mit seiner grossen Kupferfläche aber in derselben nassen Erde, und weil diese Fläche mit der Masse verbunden ist, dauerte das Aufladen so lange, dass der Chip abbrach.
+Ein zweites Problem tauchte erst auf, als die Module zusammen liefen. Steckte ein Feuchtesensor im selben Topf, reagierte die Pflanze nicht mehr auf Berührungen. Schlimmer noch: Der Touch-Chip hielt dann die Messung für alle vier Pflanzen an. Beim Messen lädt der Chip die Schraube kurz auf und misst, wie lange das dauert. Der Feuchtesensor liegt mit seiner grossen Kupferfläche aber in derselben nassen Erde. Dadurch dauerte das Aufladen so lange, dass der Chip abbrach.
 
-Der erste Versuch war, die Feuchtesensoren nur noch kurz zum Messen einzuschalten. Das reichte nicht, denn auch ausgeschaltet hingen die Sensoren weiter an der Masse. Gelöst hat es erst ein kleiner Umbau: Plus bekommen die Sensoren jetzt über GPIO 10, die Masse über GPIO 9. Zwischen den Messungen trennt die Firmware beide Leitungen, und die Sensoren hängen elektrisch in der Luft. Gemessen wird alle 10 Minuten und 45\,s nach jedem Giessen, jeweils für etwa 2\,s, und in dieser Zeit pausiert die Touch-Erkennung. Seitdem laufen Feuchtesensoren und Touch problemlos nebeneinander. Hängt ein Kanal trotzdem einmal, meldet die Firmware ihn als „stuck“, und die anderen Pflanzen funktionieren weiter.
+Gelöst haben wir das, indem Feuchte und Touch sich abwechseln. Die Feuchte wird nur noch alle 10 Minuten und 45\,s nach jedem Giessen gemessen, jeweils für etwa 2\,s, und in dieser Zeit pausiert die Touch-Erkennung. Seitdem laufen Feuchtesensoren und Touch problemlos nebeneinander. Hängt ein Kanal trotzdem einmal, meldet die Firmware ihn als „stuck“, und die anderen Pflanzen funktionieren weiter.
 
 Dazu kam ein drittes Problem. Wer eine Pflanze anfasst, lässt oft auch die Nachbartöpfe ausschlagen. Seit Firmware 2.12 gilt deshalb immer nur eine Pflanze als berührt, nämlich die, deren Wert am stärksten über ihrer Schwelle liegt. Eine andere Pflanze übernimmt erst, wenn sie 1,5-mal stärker ausschlägt. Ausserdem lässt sich die Empfindlichkeit in der \path{config.yaml} einstellen. Im Moment sind die Schwellen dreimal so hoch wie nach der Kalibrierung, liegen also beim Achtzehnfachen des Rauschens. So löst auch eine Hand, die nur in die Nähe der Pflanze kommt, nichts mehr aus. Auf dem Pi wird zusätzlich dieselbe Pflanze 2\,s nach einem Musikbefehl ignoriert, damit ein nachfedernder Kontakt die Musik nicht gleich wieder pausiert.
 
@@ -401,7 +400,7 @@ Aus diesem Signal berechnet er 30 Mal pro Sekunde per FFT acht Frequenzbänder v
 
 Das Ergebnis sieht man im Ast: Der Bass liegt in der Mitte, die Höhen aussen, und bei jedem Bass-Schlag blitzt der Ast kurz auf. So tanzt das Licht im Takt der Musik, die gerade läuft.
 
-Die Oberfläche auf dem Display ist eine Webseite, die vom Pi selbst kommt. Darauf sieht man die vier Pflanzen mit ihren Messwerten und den Player. Auch der NFC-Sticker führt auf diese Webseite. Auf ihm ist eine URL mit der ID eines Profils gespeichert. Hält jemand das Handy daran, öffnet sich die Seite, und der Pi wechselt auf dieses Profil.
+Die Oberfläche auf dem Display ist eine Webseite, die vom Pi selbst kommt. Darauf sieht man die vier Pflanzen mit ihren Messwerten und den Player.
 
 Zwei weitere Dinge kamen erst nach dem Kurs dazu. Beim Wechsel zu einer anderen Pflanze lief anfangs noch kurz der alte Song weiter. Jetzt stoppt der Player auf dem Display den alten Song sofort, und das Licht wechselt schon, bevor Spotify antwortet. Ausserdem ruckelte die Musik. Ein Grund dafür waren die Effekte der Oberfläche, also Unschärfe und bewegte Farbflächen, die den Pi~4 stark belasten. Auf dem Pi selbst läuft die Oberfläche deshalb in einer schlichteren Variante. Ganz weg ist das Stocken damit aber nicht (siehe Limitationen).
 
@@ -425,19 +424,19 @@ Wie die Hardware ist auch der Code auf zwei Programme verteilt. Die Firmware fü
 \midrule
 \path{software/firmware/spicetracks_esp32/spicetracks_esp32.ino} & Firmware ESP32: Sensoren, Pumpe, Motor, LEDs, Protokoll \\
 \path{software/firmware/spicetracks_esp32/touch_lukas.h} & Touch-Erkennung Version 4 \\
-\path{software/pi/config.yaml} & Pflanzen, Farben, Grenzwerte, Profile, Playlists, Touch-Empfindlichkeit, Equalizer an oder aus \\
+\path{software/pi/config.yaml} & Pflanzen, Farben, Grenzwerte, Playlists, Touch-Empfindlichkeit, Equalizer an oder aus, Demo-Modus für Vorführungen \\
 \path{software/pi/spicetracks/app.py} & Logik: Touch, Musik, Giessen, Licht \\
 \path{software/pi/spicetracks/esp_link.py} & serielle Verbindung zum ESP32 \\
 \path{software/pi/spicetracks/spotify_ctl.py} & Spotify Web API \\
 \path{software/pi/spicetracks/audio_eq.py} & Equalizer (FFT, Beat-Erkennung) \\
-\path{software/pi/spicetracks/web.py} & Webserver und NFC-Profilseite \\
+\path{software/pi/spicetracks/web.py} & Webserver für die Oberfläche \\
 \path{software/pi/spicetracks/hwtest.py} & Testmenü für die Hardware \\
 \path{software/pi/web/index.html} & Oberfläche auf dem Display \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Alle Einstellungen stehen in einer einzigen Datei, der \path{config.yaml}: die Pflanzen mit Farben und Grenzwerten, die Helligkeit der LEDs, die Empfindlichkeit der Touch-Erkennung sowie der Schalter für den Equalizer. Das Programm liest die Datei alle 10\,s neu ein. Farben oder Grenzwerte kann man also ändern, ohne etwas neu zu starten.
+Alle Einstellungen stehen in einer einzigen Datei, der \path{config.yaml}: die Pflanzen mit Farben und Grenzwerten, die Helligkeit der LEDs, die Empfindlichkeit der Touch-Erkennung sowie die Schalter für den Equalizer und den Demo-Modus. Das Programm liest die Datei alle 10\,s neu ein. Farben oder Grenzwerte kann man also ändern, ohne etwas neu zu starten.
 
 Beim Entwickeln half ausserdem, dass sich die Software auch ohne Hardware testen lässt. Dann ersetzt ein simulierter ESP32 die echte Elektronik, und die Pflanzen werden über Knöpfe im Browser „berührt“. Für die echte Hardware gibt es ein eigenes Testmenü, mit dem man Sensoren, LEDs, Pumpe und Verteiler einzeln prüfen kann.
 
@@ -489,7 +488,7 @@ Musik ruckelt & Unschärfe und bewegte Farbflächen auf der Oberfläche brauchen
 Licht hinkt der Musik hinterher & Bluetooth-Lautsprecher spielen den Ton 150 bis 250\,ms später ab, als der Pi ihn verarbeitet. & Das Licht wartet 180\,ms, bevor es reagiert. So passt der Equalizer zu dem, was man hört. \\
 \end{xltabular}}
 
-Manche Probleme zeigten sich erst, als alle Module zusammen liefen. Dass die Feuchtesensoren die Touch-Messung stören, fiel zum Beispiel erst am letzten Kurstag auf. Eine erste Lösung gab es noch am selben Tag, endgültig gelöst war das Problem aber erst nach dem Kurs. Bei der Demo am Donnerstag machten die Touch-Sensoren noch Probleme, bei der finalen Demo am Freitag lief dann alles wie geplant.
+Manche Probleme zeigten sich erst, als alle Module zusammen liefen. Dass die Feuchtesensoren die Touch-Messung stören, fiel zum Beispiel erst am letzten Kurstag auf. Gelöst haben wir es noch am selben Tag. Bei der Demo am Donnerstag machten die Touch-Sensoren noch Probleme, bei der finalen Demo am Freitag lief dann alles wie geplant.
 
 \subsection{Was gut lief}
 
