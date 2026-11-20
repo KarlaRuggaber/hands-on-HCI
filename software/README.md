@@ -5,7 +5,7 @@ Stand: Firmware 2.14 und die dazugehörige Pi-Software.
 Zwei Programme:
 
 - **`firmware/`** läuft auf dem ESP32: Feuchte, Licht, Touch auf den Pflanzen, Pumpe, Verteiler und der LED-Streifen im Dach. Er entscheidet nichts, er führt aus und schützt (Pumpe stoppt immer selbst nach höchstens 10 s).
-- **`pi/`** läuft auf dem Raspberry Pi: Logik, Spotify, Equalizer (zurzeit ausgeschaltet), Bedienoberfläche auf dem Display und die Seite hinter dem NFC-Sticker.
+- **`pi/`** läuft auf dem Raspberry Pi: Logik, Spotify, Equalizer, Bedienoberfläche auf dem Display.
 
 ```
 Pflanze berühren ─► ESP32 ──{"t":"touch","plant":1}──► Pi ──► Spotify Web API: "spiel Playlist X auf Gerät Spicetracks"
@@ -80,7 +80,7 @@ Strom ist in der Firmware auf 1,5 A begrenzt (`light.max_ma` in `config.yaml`). 
 
 Farben und Einstellungen: Alles steht in `pi/config.yaml`, nichts muss in die Firmware. Pro Pflanze `color` (Bildschirm) und `led` mit drei Farben (`dark` leise, `main`, `bright` laut), unter `light` die Helligkeit, `use_white_chip` und `max_ma`, unter `spotify` die Lautstärke, unter `touch` die Empfindlichkeit und unter `sensors` der Demo-Modus. Das laufende Programm liest die Datei alle 10 s neu ein und schickt die Werte an den ESP32, ein Neustart ist nicht nötig. Nur `serial`, `eq` und der Spotify-Gerätename brauchen einen Neustart. Ältere `config.yaml` einmal mit `python add_led_config.py` ergänzen.
 
-Equalizer: Spotify gibt keine Audio-Analyse mehr heraus, deshalb kann der Pi mithören, was der Lautsprecher spielt (PipeWire-Monitor), 8 Frequenzbänder von 40 Hz bis 12 kHz rechnen und Bass-Schläge erkennen. Bluetooth-Lautsprecher hängen 150 bis 250 ms nach, `eq.delay_ms` gleicht das aus. **Zurzeit ist er aus** (`eq.enabled: false`), weil am Monitor bisher nur Stille ankommt. Das spart auch Rechenleistung auf dem Pi. Zum Testen `eq.enabled: true` setzen und das Programm neu starten.
+Equalizer: Spotify gibt keine Audio-Analyse mehr heraus, deshalb kann der Pi mithören, was der Lautsprecher spielt (PipeWire-Monitor), 8 Frequenzbänder von 40 Hz bis 12 kHz rechnen und Bass-Schläge erkennen. Bluetooth-Lautsprecher hängen 150 bis 250 ms nach, `eq.delay_ms` gleicht das aus.
 
 ## Einrichten
 
@@ -163,8 +163,7 @@ Schritt für Schritt, jedes Teil einzeln. Erst wenn ein Schritt klappt, den näc
    Menü: `s` Sensorwerte, `l` LED-Test (Zonen, Equalizer-Welle, Ruhelicht), `p` Pumpe 1 s (Schlauch in ein Glas), `h` und `g` Verteiler, `w` giessen, `t` Berührungen beobachten, `m` Touch-Werte live, `c` Touch neu kalibrieren, `f` Feuchte jetzt messen. Das Testprogramm übernimmt Verteiler-Positionen, Touch-Pins und Touch-Empfindlichkeit aus `config.yaml`.
 3. **Pi-Programm ohne Spotify:** `python -m spicetracks --no-spotify --no-eq -v`. Pflanze berühren: im Log erscheint `touch`, die Zone leuchtet.
 4. **Mit Spotify:** `python -m spicetracks --no-eq -v`. Pflanze berühren: Musik startet auf dem Lautsprecher.
-5. **Mit Equalizer:** `eq.enabled: true` in `config.yaml`, dann `python -m spicetracks -v`. Im Log steht alle 10 s der Pegel; „nur Stille“ heisst, dass am Monitor kein Ton ankommt. Passt der Takt nicht, `eq.delay_ms` anpassen (Licht zu früh: Wert erhöhen).
-6. **Dauerlauf:** eine Stunde laufen lassen, dabei giessen, Musik wechseln, Pi neu starten.
+5. **Dauerlauf:** eine Stunde laufen lassen, dabei giessen, Musik wechseln, Pi neu starten.
 
 Läuft der Dienst schon, zuerst `systemctl --user stop spicetracks`, sonst ist der USB-Port besetzt.
 
